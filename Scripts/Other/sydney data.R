@@ -71,7 +71,8 @@ ggplot(data = wide.df, mapping = aes(x = popsoil, y = agbiomeas, color = stateso
             legend.title = element_text(size = 14),
             panel.background = element_rect(fill = NA),
             legend.key = element_rect(fill = NA),
-            legend.background = element_rect(fill = NA))
+            legend.background = element_rect(fill = NA),
+            axis.text.x = element_text(angle = 90))
 
 ggplot(data = wide.df, mapping = aes(x = stategarden, y = agbiomeas, color = statesoil)) +
   geom_boxplot() +

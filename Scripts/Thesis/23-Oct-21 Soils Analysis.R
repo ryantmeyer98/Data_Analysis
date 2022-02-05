@@ -16,6 +16,8 @@ if(!require(nlme)){install.packages("nlme")}
 if(!require(lme4)){install.packages("lme4")}
 if(!require(lmerTest)){install.packages("lmerTest")}
 
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # OBJECTIVE: GRAPH AND ANALYZE SOIL NITRATE OVER TIME BY SEASON ----
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -195,8 +197,37 @@ no3n_emm.plot
 ggsave(filename = "Figures/Nitrate EMM.pdf", no3n_emm.plot,
        width = 7, height = 7, units = "in")
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# I WANT TO BE ABLE TO LOOK AT HOW SOIL NUTRIENT CHANGE OVER TIME ----
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# I will not be calculating emmeans like i did for the full dataset, but will do
+# mean and standard error plots to see how they change over time, should be able to compare
+# between years still
 
+# 2019 dataset 
+graph_data.df %>%
+  filter(variable %in% c("no3n_ppm")) %>%
+  ggplot(mapping = aes(x = year_season, y = value_mean, shape = variable, color = treatment)) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 4,
+    position = position_dodge(width = 0.3)) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
+    position = position_dodge(width = 0.3))  +
+  theme(axis.line = element_line(linetype = "solid"),
+    axis.ticks = element_line(size = 1),
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 14),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14),
+    legend.text = element_text(size = 14),
+    legend.title = element_text(size = 14),
+    panel.background = element_rect(fill = NA),
+    legend.key = element_rect(fill = NA),
+    legend.background = element_rect(fill = NA)) +
+  labs(x = "Year+Season", y = "Nitrate Nitrogen mg/L", shape = NULL) +
+  theme(axis.text.x = element_text(angle = 15, hjust = 1))
 
 
 
