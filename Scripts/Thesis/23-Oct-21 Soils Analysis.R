@@ -206,6 +206,11 @@ ggsave(filename = "Figures/Nitrate EMM.pdf", no3n_emm.plot,
 # between years still
 
 # 2019 dataset 
+
+graph_data.df <- graph_data.df %>%
+  mutate(year_season = fct_relevel(year_season, "2019_fall","2020_spring", "2020_fall", "2021_spring", "2021_fall"))
+
+
 graph_data.df %>%
   filter(variable %in% c("no3n_ppm")) %>%
   ggplot(mapping = aes(x = year_season, y = value_mean, shape = variable, color = treatment)) +
