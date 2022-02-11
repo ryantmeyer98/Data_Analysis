@@ -166,6 +166,18 @@ plot(fitted(no3n.lm),residuals)
 qqnorm(residuals)
 qqline(residuals)
 
+
+test.lm <- lmer(value ~ treatment * year_season + block * (1|plot/block),
+                data = no3n.df,
+                REML = TRUE)
+Anova(test.lm, type = "3")
+
+test.emm <- emmeans(test.lm, ~ treatment * year_season)
+results.emminteractions1 <- emmeans(test.emm, 
+                                   pairwise ~ treatment * year_season, adjust = "bonferroni")
+results.emminteractions1$contrasts
+results.emminteractions1$emmeans
+
 # multiple comparisons and lsmeans  HAVE TO GRAPH WITH EMM TO REMOVE BLOCK EFFECT 
 
 no3n.emm <- emmeans(no3n.lm, ~ treatment)
