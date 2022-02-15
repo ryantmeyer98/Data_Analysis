@@ -75,7 +75,7 @@ ggplot(data = wide.df, mapping = aes(x = popsoil, y = agbiomeas, color = stateso
             axis.text.x = element_text(angle = 90))
 
 ggplot(data = wide.df, mapping = aes(x = stategarden, y = agbiomeas, color = statesoil)) +
-  geom_boxplot() +
+  geom_boxplot() 
   geom_jitter()
 
 wide.df <- wide.df %>%

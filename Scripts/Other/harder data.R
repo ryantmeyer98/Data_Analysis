@@ -66,3 +66,18 @@ long.df %>%
   geom_point()
 
 trt.plot + day.plot + plot_layout(ncol = 2)
+
+
+# stuff sydney did
+
+#Mean and standard error plot
+ggplot(data = long.df, aes(x = treatment, y = value)) +
+  stat_summary(fun=mean, na.rm=TRUE, geom = "point", position = position_dodge2(width = 1)) +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar", position = position_dodge2(width = 1))
+
+#Scatter plot
+ggplot(data = long.df, aes(x = treatment, y = value, color = name)) +
+  stat_summary(fun=mean, na.rm=TRUE, geom = "point", position = position_dodge2(width = 1)) +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar", position = position_dodge2(width = 1)) +
+  geom_jitter() +
+  facet_wrap(~name)
