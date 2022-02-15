@@ -33,7 +33,7 @@ long.df <- long.df %>%
 # SOME SIMPLE GRAPHS ----
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-long.df %>%
+full.plot <- long.df %>%
   ggplot(aes(x = treatment, y = value, color = name, shape = sampling_day)) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 3,
@@ -42,7 +42,7 @@ long.df %>%
     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.3,
     position = position_dodge(width = 0.3)) 
 
-long.df %>%
+trt.plot <- long.df %>%
   ggplot(aes(x = treatment, y = value, color = name)) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 3,
@@ -51,7 +51,7 @@ long.df %>%
     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.3,
     position = position_dodge(width = 0.3))
 
-long.df %>%
+day.plot <- long.df %>%
   ggplot(aes(x = treatment, y = value, color = sampling_day)) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 3,
@@ -64,3 +64,5 @@ long.df %>%
   ggplot(aes(x = treatment, y = value)) +
   geom_violin() +
   geom_point()
+
+trt.plot + day.plot + plot_layout(ncol = 2)
