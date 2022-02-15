@@ -103,7 +103,7 @@ interaction.plot(
   col = c("#999999", "#000000", "#993300", "#FF6699", "#99CC00", "#CC0033", "#0033FF"),
   lty = 1,
   lwd = 2,
-  trace.label = "Population"
+  trace.label = "Population")
   
 interaction.plot(
   x.factor = wide.df$stategarden,
