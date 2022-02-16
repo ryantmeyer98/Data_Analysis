@@ -25,6 +25,7 @@ full.df <- read_excel("Data/Other/popeco_lab_two.xlsx", sheet = "Sheet2") %>%
 r0.plot <- full.df %>%
   filter(metric == "R0") %>%
   ggplot(aes(x = community, y = value, color = community)) +
+  geom_point(position = position_dodge2(width = 0.3)) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 4,
     position = position_dodge(width = 0.3)) +
@@ -46,6 +47,7 @@ r0.plot <- full.df %>%
 hours.plot <- full.df %>%
   filter(metric == "hours") %>%
   ggplot(aes(x = community, y = value, color = community)) +
+  geom_point(position = position_dodge2(width = 0.3)) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 4,
     position = position_dodge(width = 0.3)) +
@@ -67,6 +69,7 @@ hours.plot <- full.df %>%
 final_percent_infected.plot <- full.df %>%
   filter(metric == "final_percent_infected") %>%
   ggplot(aes(x = community, y = value, color = community)) +
+  geom_point(position = position_dodge2(width = 0.3)) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 4,
     position = position_dodge(width = 0.3)) +
@@ -88,6 +91,7 @@ final_percent_infected.plot <- full.df %>%
 peak_infection_rate.plot <- full.df %>%
   filter(metric == "peak_infection_rate") %>%
   ggplot(aes(x = community, y = value, color = community)) +
+  geom_point(position = position_dodge2(width = 0.3)) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 4,
     position = position_dodge(width = 0.3)) +
@@ -109,6 +113,7 @@ peak_infection_rate.plot <- full.df %>%
 peak_recovery_rate.plot <- full.df %>%
   filter(metric == "peak_recovery_rate") %>%
   ggplot(aes(x = community, y = value, color = community)) +
+  geom_point(position = position_dodge2(width = 0.3)) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 4,
     position = position_dodge(width = 0.3)) +
@@ -130,6 +135,7 @@ peak_recovery_rate.plot <- full.df %>%
 still_susceptible.plot <- full.df %>%
   filter(metric == "still_susceptible") %>%
   ggplot(aes(x = community, y = value, color = community)) +
+  geom_point(position = position_dodge2(width = 0.3)) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 4,
     position = position_dodge(width = 0.3)) +
