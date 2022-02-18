@@ -104,6 +104,7 @@ no3.df %>%
 # ME MAKE PLOT ---
 smooth.plot <- ggplot(data = no3.df, mapping = aes(x = date, y = porewater_no3_mgl, color = treatment)) +
   geom_smooth(se = FALSE) +
+  geom_point(size = 3, position = position_dodge2(width = 0.7), shape = 5) +
   stat_summary(
     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 3, size = 0.7,
     position = position_dodge2(width = 3)) +
@@ -239,6 +240,7 @@ no3.df %>%
 # patchwork ----
 library(patchwork)
 smooth.plot + season.plot
+
 full.plot <- smooth.plot + season.plot +
   plot_layout(ncol=2, guides = "collect", widths = c(4,1)) + theme(axis.title.y = element_blank(), 
                                                   axis.text.y = element_blank(),

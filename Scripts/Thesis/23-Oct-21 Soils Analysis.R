@@ -226,8 +226,9 @@ graph_data.df <- graph_data.df %>%
 graph_data.df %>%
   filter(variable %in% c("no3n_ppm")) %>%
   ggplot(mapping = aes(x = year_season, y = value_mean, shape = variable, color = treatment)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
   stat_summary(
-    fun = mean, na.rm = TRUE, geom = "point", size = 4,
+    fun = mean, na.rm = TRUE, geom = "point", size = 5,
     position = position_dodge(width = 0.3)) +
   stat_summary(
     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
