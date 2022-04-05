@@ -1,0 +1,219 @@
+---
+title: "C:N Ratios"
+author: "Meyer, R."
+date: "2022-4-4"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: flatly
+  word_document:
+    toc: yes
+description: |
+  C-N Ratio Results from Pennycress Decomp Study
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(tidyverse)
+library(here)
+library(readxl)
+library(patchwork)
+library(janitor)
+library(car)
+library(lme4)
+library(lmerTest)
+library(nlme)
+library(knitr)
+library(emmeans)
+library(multcomp)
+```
+
+```{r include=FALSE}
+# read in the data
+no_data.df <- read.csv(here("Data/Decomp/n no data.csv")) %>%
+  clean_names() %>%
+  remove_empty(which = c("cols", "rows"))
+
+n_data.df <- read.csv(here("Data/Decomp/n with data.csv")) %>%
+  clean_names() %>%
+  remove_empty(which = c("cols", "rows"))
+
+# modify the data
+no_data.df <- no_data.df %>%
+  rename(id = bag)
+
+n_data.df <- n_data.df %>%
+  rename(id = sample)
+
+# join the data
+full.df <- full_join(no_data.df, n_data.df, by = "id")
+
+# filter out decomp data
+decomp.df <- full.df %>%
+  filter(study == "decomp")
+
+# select the columns we care about
+# decomp.df <- decomp.df %>%
+#   select(id, spp, plot, subplot, percent_n, percent_c)
+
+# set plot to factor
+decomp.df <- decomp.df %>%
+  mutate(plot = as.factor(plot))
+
+# need to remove an na
+decomp.df <- decomp.df %>%
+  filter(id != 327)
+
+# calculate C:N ratio
+decomp.df <- decomp.df %>%
+  mutate(c_n_ratio = percent_c / percent_n)
+
+# create a summary table
+decomp_summary.df <- decomp.df %>%
+  group_by(spp, plot) %>%
+  summarize(avg_pct_n = mean(percent_n),
+            avg_pct_c = mean(percent_c),
+            c_n_ratio = mean(percent_c / percent_n))
+
+# right now it looks like soil doesn't have much of an effect so make a table without it
+decomp_summary_no_soil.df <- decomp.df %>%
+  group_by(spp) %>%
+  summarize(avg_pct_n = mean(percent_n),
+            avg_pct_c = mean(percent_c),
+            c_n_ratio = mean(percent_c / percent_n))
+
+```
+
+# Summary Tables
+## C:N ratios
+
+- ar = Annual Rye
+- cr = Cereal Rye
+- pc = Wild Type Pennycress
+- gm = Gene Edited AOP2 Pennycress
+
+Table 1. Carbon to nitrogen ratio, percent carbon, and percent nitrogen by species. 
+
+```{r echo=FALSE}
+kable(decomp_summary_no_soil.df)
+```
+
+## C:N ratios by plot
+
+Table 2. Carbon to nitrogen ratio, percent carbon, and percent nitrogen by species with plot. Plots were determined by placing samples in the two most prevalent soil types in central Illinois. 
+
+```{r echo=FALSE}
+kable(decomp_summary.df)
+```
+
+# Summary Figure
+```{r echo=FALSE}
+decomp.df %>%
+  ggplot(aes(x = spp, y = c_n_ratio, color = plot)) +
+stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+  theme_classic()
+```
+
+Figure 1. Mean and standard error of carbon to nitrogen ratio by species with color as plot. 
+
+# Statistics
+## Do species significantly differ in their C:N ratio, does soil type have a significant effect?
+
+Model:
+
+- DV: C:N ratio
+- Fixed = Secies
+- Random = Soil type (plot) and Row 
+
+Using AIC the model with plot and subplot fit the best so those terms are included as random effects, but they do not have a significant effect on the model using the -2 Log Likelihood method. 
+
+```{r include = FALSE}
+# make linear model
+model.lm <- lmer(c_n_ratio ~ spp + (1|plot) + (1|subplot),
+                data = decomp.df,
+                REML = TRUE)
+
+# model selection
+ranova.df <- as.data.frame(ranova(model.lm))
+
+```
+
+```{r echo=FALSE}
+# assumptions 
+residuals <- resid(model.lm)
+plot(fitted(model.lm), residuals)
+qqnorm(residuals)
+```
+
+
+Figures 2 and 3. Graphed residuals for visual analysis of homogeneity of variance and normality. 
+
+Table 3. Data used for model selection. 
+```{r echo = FALSE}
+kable(ranova.df)
+```
+
+## Post Hoc Analysis 
+```{r echo=FALSE}
+# emmeans
+emm.emm <- emmeans(model.lm, pairwise ~ spp, adjust = "bonferroni")
+
+# plot
+plot(emm.emm, comparisons = TRUE) + theme_classic()
+
+emminteraction = emmeans(model.lm, pairwise ~ spp, adjust = "bonferroni", alpha = 0.5)
+```
+
+Figure 4. Estimated marginal mean by species with 95% confidence intervals, red arrows demonstrate overlap in confidence intervals. 
+
+Table 4. Estimated Marginal Means and Results.
+
+```{r echo=FALSE}
+kable(emminteraction$contrasts)
+```
+
+# Conclusion
+
+  To determine if statistical differences were present in the carbon to nitrogen ratios by species a general linear mixed model was used to analyze the data with species as a fixed effect and plot and row (subplot) as random effects. Assumptions were analyzed visually with the null hypotheses that data are not normal and homogeneous. Visual analysis rejects these null hypotheses, these data meet the assumptions for this test. The significance of the random effects in the model were analyzed using AIC and the -2 log likelihood method. While the -2 log likelihood method indicates that the random effects do not have a significant impact on the model the model with the lowest AIC included the random effects, so they were left in the model. 
+  
+  To account for the effects of the random effects and determine differences between all pairwise comparisons estimated marginal means were calculated and compared using the bonferroni method with an alpha of 0.05. Results indicate signficant differences in the C:N ratio between annual rye and cereal rye (p<0.05), annual rye and gene edited pennycress (p<0.05), cereal rye and wild type pennycress (p = 0.48), and gene edited and wild type pennycress (p<0.05). Annual rye has a significantly lower C:N ratio than cereal rye and gene edited pennycress. Cereal rye has a higher C:N ratio than wild type pennycress. Most importantly gene edited pennycress has a significanly higher C:N ratio than wild type pennycress. 
+  
+Homogenized by plot the C:N ratios of the crops are as follows
+
+- ar = 20.8:1
+- cr = 26.2:1
+- gm = 28:1
+- pc = 23.3:1
+
+```{r echo = FALSE}
+decomp.df %>%
+  ggplot(aes(x = spp, y = c_n_ratio)) +
+stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+  expand_limits(y = 15) +
+annotate("text", x = "ar", y = 17, label = "A", size = 7) +
+annotate("text", x = "pc", y = 17, label = "A", size = 7) +
+annotate("text", x = "cr", y = 17, label = "B", size = 7) +
+annotate("text", x = "gm", y = 17, label = "B", size = 7) +
+  theme_classic()
+```
+
+Figure 5. Mean and standard error of carbon to nitrogen ratios by species with letters indicating significant differences between groups. 
+
+
+```{r include = FALSE}
+cld(emm.emm)
+```
+
+
