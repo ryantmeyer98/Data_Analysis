@@ -1,6 +1,5 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# OBJECTIVE: Determine how additions of potassium phosphate affect phosphorus uptake and 
-# growth rate of lemna
+# OBJECTIVE: DETERMINE HOW DIFFERENT LEVELS OF FERTILIZATION AFFECT LEMNA POPULATION GROWTH
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -15,15 +14,6 @@ library(car)
 library(lme4)
 library(lmerTest)
 library(nlme)
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# READ IN THE DATA ----
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-
-# read in wide data 
-wide.df <- read_csv("Data/Other/popeco/lemna.csv") %>%
-  clean_names() %>%
-  remove_empty(which = c("cols", "rows"))
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # THEME ----
@@ -57,6 +47,15 @@ theme_isco <- function(base_size = 14, base_family = "Times")
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# READ IN THE DATA ----
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+# read in wide data 
+wide.df <- read_csv("Data/Other/popeco/lemna.csv") %>%
+  clean_names() %>%
+  remove_empty(which = c("cols", "rows"))
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # DATA MANIPULATIONS ----
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
@@ -70,37 +69,43 @@ wide.df <- wide.df %>%
 wide.df <- wide.df %>%
   mutate(r = births - deaths / n)
 
-# average table
-table.df <- wide.df %>%
-  group_by(trt) %>%
-  summarize(avg_n = mean(n),
-            avg_births = mean(births),
-            avd_deaths = mean(deaths),
-            avg_r = mean(r))
+# reproductive rate
+wide.df <- wide.df %>%
+  mutate(r0 = lx * births)
 
-# convert wide to long
-long.df <- wide.df %>%
-  pivot_longer(cols = c(n, births, deaths),
-              names_to = "metric",
-              values_to = "value")
+# # average table
+# table.df <- wide.df %>%
+#   group_by(trt) %>%
+#   summarize(avg_n = mean(n),
+#             avg_births = mean(births),
+#             avd_deaths = mean(deaths),
+#             avg_r = mean(r))
+# 
+# # convert wide to long
+# long.df <- wide.df %>%
+#   pivot_longer(cols = c(n, births, deaths),
+#               names_to = "metric",
+#               values_to = "value")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # PLOTTING ----
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-# by treatment
-rt.plot <- ggplot(data = wide.df, mapping = aes(x = trt, y = r, color = t)) +
-  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
-  stat_summary(
-    fun = mean, na.rm = TRUE, geom = "point", size = 5,
-    position = position_dodge(width = 0.3)) +
-  stat_summary(
-    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
-    position = position_dodge(width = 0.3))
-rt.plot
+# all figures
+r_by_t.plot
+r_by_trt.plot
+r0_t.plot
+r0_trt.plot
+n_t.plot
+n_trt.plot
+
+
+r_by_t.plot + r_by_trt.plot
+r0_t.plot + r0_trt.plot
+n_t.plot + n_trt.plot
 
 # r by treatment for t = 1
-r_no_t0.plot <- wide.df %>%
+r_by_trt.plot <- wide.df %>%
   filter(t !=0) %>%
   ggplot(mapping = aes(x = trt, y = r, color = t)) +
   geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
@@ -115,7 +120,9 @@ r_no_t0.plot <- wide.df %>%
 r_no_t0.plot
 
 # r by time with treatment as a color
-r_by_t.plot <- ggplot(data = wide.df, mapping = aes(x = t, y = r, color = trt)) +
+r_by_t.plot <- wide.df %>%
+  filter(t != 0) %>%
+  ggplot(mapping = aes(x = t, y = r, color = trt)) +
   geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 5,
@@ -126,9 +133,66 @@ r_by_t.plot <- ggplot(data = wide.df, mapping = aes(x = t, y = r, color = trt)) 
   theme_isco()
 r_by_t.plot  
 
-r_no_t0.plot + r_by_t.plot
+# reproductive rate plot
+r0_t.plot <- wide.df %>%
+  filter(t != 0) %>%
+  ggplot(aes(x = t, y = r0, color = trt)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 5,
+    position = position_dodge(width = 0.3)) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
+    position = position_dodge(width = 0.3)) +
+  theme_isco()
+r0.plot
+  
+r0_trt.plot <- wide.df %>%
+  filter(t != 0) %>%
+  ggplot(aes(x = trt, y = r0, color = t)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 5,
+    position = position_dodge(width = 0.3)) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
+    position = position_dodge(width = 0.3)) +
+  theme_isco()
+r0_trt.plot
 
-# SOME STATS ----
+
+# what about n
+n_t.plot <- wide.df %>%
+  filter(t != 0) %>%
+  ggplot(aes(x = t, y = n, color = trt)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 5,
+    position = position_dodge(width = 0.3)) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
+    position = position_dodge(width = 0.3)) +
+  theme_isco()
+n_t.plot
+
+n_trt.plot <- wide.df %>%
+  filter(t != 0) %>%
+  ggplot(aes(x = trt, y = n, color = t)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 5,
+    position = position_dodge(width = 0.3)) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
+    position = position_dodge(width = 0.3)) +
+  theme_isco()
+n_trt.plot
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# STATS ----
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
 # model 
 one.lm <- lmer(r ~ trt + t + (1|cup),
                data = wide.df,
@@ -152,7 +216,7 @@ final.lm <- lm(r ~ trt + t, data = wide.df)
 Anova(final.lm, type = "3")
 
 # assumptions
-plot(final.lm)
-qqnorm(resid(final.lm))
-qqline(resid(final.lm))
+residuals <- resid(one.lm)
+plot(fitted(one.lm), residuals)
+qqnorm(residuals)
 

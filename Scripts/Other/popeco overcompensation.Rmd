@@ -1,0 +1,329 @@
+---
+title: "C:N Ratios"
+author: "Team Rabbit"
+date: "2022-4-7"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: flatly
+  word_document:
+    toc: yes
+description: |
+  Results from overcompensation study 
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r libraries, include= FALSE}
+# load libraries
+library(tidyverse)
+library(here)
+library(patchwork)
+library(janitor)
+library(knitr)
+library(lme4)
+```
+
+```{r, data, include = FALSE}
+# read in the data
+full.df <- read.csv(here("Data/Other/popeco/overcomp.csv")) %>%
+  clean_names() %>%
+  remove_empty(which = c("cols", "rows"))
+
+# remove column at end 
+full.df <- full.df %>%
+  select(-i_hate_math_cut_at_this_height_on_the_plant)
+
+# rename treatment
+full.df <- full.df %>%
+  rename(trt = treat)
+
+# make stuff factors
+full.df <- full.df %>%
+  mutate(week = as.factor(week),
+         trt = as.factor(trt))
+
+# water content
+full.df <- full.df %>%
+  mutate(water_content_g = above_wet_bio_g - above_dry_bio_g)
+
+full.df <- full.df %>%
+  mutate(water_ratio = above_wet_bio_g - above_dry_bio_g / above_wet_bio_g)
+
+full.df <- full.df %>%
+  mutate(test_ratio = above_wet_bio_g - above_dry_bio_g / above_dry_bio_g)
+
+# remove column at end
+# test.df <- full.df %>%
+#   dplyr::select(week)
+```
+
+```{r, summary files, include = FALSE}
+# summary file 
+summary.df <- full.df %>%
+  group_by(trt) %>%
+  summarize(total_dry_biomass = sum(above_dry_bio_g, na.rm = TRUE),
+            total_wet_biomass = sum(above_wet_bio_g, na.rm = TRUE),
+            dry_error = sd(above_dry_bio_g, na.rm = TRUE),
+            wet_error = sd(above_wet_bio_g, na.rm = TRUE))
+
+# calculate se
+summary.df <- summary.df %>%
+  mutate(dry_se = dry_error / 5) %>%
+  mutate(wet_se = wet_error / 5)
+
+# plus and minus se
+summary.df <- summary.df %>%
+  mutate(dry_error_plus_se = total_dry_biomass + dry_se) %>%
+  mutate(dry_error_minus_se = total_dry_biomass - dry_se) %>%
+  mutate(wet_error_plus_se = total_wet_biomass + wet_se) %>%
+  mutate(wet_error_minus_se = total_wet_biomass - wet_se)
+
+# add water ratio with se
+summary.df <- summary.df %>%
+  mutate(water_ratio = (total_wet_biomass - total_dry_biomass) / total_wet_biomass) %>%
+  mutate(water_sd = sd(water_ratio)) %>%
+  mutate(water_se = water_sd / 5)
+
+# plus and minus of se for water ratio
+summary.df <- summary.df %>%
+  mutate(water_error_plus_se = water_ratio + water_se) %>%
+  mutate(water_error_minus_se = water_ratio - water_se) 
+```
+
+```{r, prelim plots, include = FALSE}
+# # make some graphs
+# 
+# # above wet by time 
+# above_wet_t.plot <- full.df %>%
+#   filter(week != 5) %>%
+#   ggplot(aes(x = week, y = above_wet_bio_g, color = trt)) +
+#   stat_summary(
+#     fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+#   stat_summary(
+#     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+#   theme_classic()
+# 
+# # above dry by time
+# above_dry_t.plot <- full.df %>%
+#   filter(week != 5) %>%
+#     ggplot(aes(x = week, y = above_dry_bio_g, color = trt)) +
+#   stat_summary(
+#     fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+#   stat_summary(
+#     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+#   theme_classic()
+# 
+# # above wet by trt
+# above_wet_trt.plot <- full.df %>%
+#   filter(week != 5) %>%
+#     ggplot(aes(x = trt, y = above_wet_bio_g, color = week)) +
+#   stat_summary(
+#     fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+#   stat_summary(
+#     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+#   theme_classic()
+# 
+# # above dry by trt
+# above_dry_trt.plot <- full.df %>%
+#   filter(week != 5) %>%
+#     ggplot(aes(x = trt, y = above_dry_bio_g, color = week)) +
+#   stat_summary(
+#     fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+#   stat_summary(
+#     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+#   theme_classic()
+# 
+# # water content
+# water_content.plot <- full.df %>%
+#     ggplot(aes(x = trt, y = water_content_g, color = week)) +
+#   stat_summary(
+#     fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+#   stat_summary(
+#     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+#   theme_classic()
+# water_content.plot
+# 
+# # water ratio plot
+# water_ratio.plot <- full.df %>%
+#   filter(week != 5) %>%
+#     ggplot(aes(x = trt, y = water_ratio, color = week)) +
+#   stat_summary(
+#     fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+#   stat_summary(
+#     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+#   theme_classic()
+# 
+# # test ratio plot
+# test_ratio.plot <- full.df %>%
+#   filter(week != 5) %>%
+#     ggplot(aes(x = trt, y = test_ratio, color = week)) +
+#   stat_summary(
+#     fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+#   stat_summary(
+#     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+#   theme_classic()
+# 
+# above_wet_t.plot + above_dry_t.plot + above_wet_trt.plot + above_dry_trt.plot + water_content.plot + water_ratio.plot +
+#   plot_layout(guides = "collect", ncol = 3)
+# 
+# water_content.plot + water_ratio.plot + test_ratio.plot + plot_layout(guides = "collect")
+```
+
+```{r, final plots, include = FALSE}
+# totals plot
+total_dry_biomass.plot <- summary.df %>%
+  ggplot(aes(x = trt, y = total_dry_biomass)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = dry_error_minus_se, ymax = dry_error_plus_se),
+                stat = "identity", width = 0.2) +
+  labs(x = "Treatment", y = "Total Dry Abovegound Biomass (g)") +
+  expand_limits(y = 0) +
+  annotate("text", x = "0", y = 1, label = "B", size = 7) +
+  annotate("text", x = "25", y = 1, label = "C", size = 7) +
+  annotate("text", x = "50", y = 1, label = "B", size = 7) +
+  annotate("text", x = "75", y = 1, label = "B", size = 7) +
+  annotate("text", x = "100", y = 1, label = "A", size = 7) +
+  annotate("text", x = "0", y = 32, label = "2", size = 7) +
+  theme_classic()
+total_dry_biomass.plot 
+
+water_ratio.plot <- summary.df %>%
+  ggplot(aes(x = trt, y = water_ratio)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = water_error_minus_se, ymax = water_error_plus_se),
+                stat = "identity", width = 0.2) +
+  labs(x = "Treatment", y = "Proportion of Weight in Water") +
+  annotate("text", x = "0", y = 0.65, label = "A", size = 7) +
+  annotate("text", x = "25", y = 0.65, label = "A", size = 7) +
+  annotate("text", x = "50", y = 0.65, label = "A", size = 7) +
+  annotate("text", x = "75", y = 0.65, label = "A", size = 7) +
+  annotate("text", x = "100", y = 0.65, label = "B", size = 7) +
+  annotate("text", x = "0", y = 0.9, label = "1", size = 7) +
+  theme_classic()
+water_ratio.plot
+
+
+final.plot <- water_ratio.plot + total_dry_biomass.plot
+
+ggsave(final.plot, file = "Outputs/Final.pdf", width = 6,
+       height = 6, units = "in", dpi = 300)
+
+ggsave(flow_weighted_no3.plot, file = "Figures/NO3 Concentration.pdf", units = "in", width = 3, height = 3)
+
+test.df <- summary.df %>%
+  dplyr::select(trt, total_wet_biomass, total_dry_biomass, water_ratio)
+```
+
+# Total Aboveground dry biomass
+
+```{r, include = FALSE}
+# rename pot to id
+total_trt.df <- full.df %>%
+  rename(id = pot_id)
+
+# calculate sums per plot and treatment
+total_trt1.df <- total_trt.df %>%
+  group_by(id, trt) %>%
+  summarize(total_above_dry = sum(above_dry_bio_g, na.rm = TRUE))
+
+# lmer doesn't work because there are as many treatments as n per treatment
+model.lm <- lmer(total_above_dry ~ trt + (1|id),
+                 data = total_trt1.df,
+                 REML = TRUE)
+# gonna use nlme and car for this then 
+library(nlme)
+library(car)
+
+rand.lm <- lme(total_above_dry ~ trt,
+               random = ~ 1|id,
+               data = total_trt1.df, 
+               method = "REML")
+
+norand.lm <- gls(total_above_dry ~ trt,
+                 data = total_trt1.df, 
+                 method = "REML")
+
+# check AIC, no rand has lower AIC
+anova(rand.lm, norand.lm)
+
+# run anova
+Anova(norand.lm, type = "3")
+
+# write it a simpler way to test the assumptions
+one.lm <- lm(total_above_dry ~ trt, data = total_trt1.df)
+
+residuals <- resid(one.lm)
+plot(fitted(one.lm), residuals)
+qqnorm(residuals)
+
+# post F tests
+library(emmeans)
+emm.emm <- emmeans(one.lm, pairwise ~ trt, adjust = "bonferroni")
+
+# plot
+plot(emm.emm, comparisons = TRUE) + theme_classic()
+
+emminteraction = emmeans(one.lm, pairwise ~ trt, adjust = "bonferroni", alpha = 0.5)
+emminteraction$contrasts
+
+library(multcomp)
+cld(emm.emm)
+pairs(emm.emm)
+pwpp(emm.emm)
+pwpm(emm.emm)
+```
+
+# Water Ratio
+```{r}
+# create data frame 
+water_ratio.df <- full.df %>%
+  rename(id = pot_id)
+# calculate sums per plot and treatment
+water_ratio.df <- water_ratio.df %>%
+  group_by(id, trt) %>%
+  summarize(water_ratio = sum(water_ratio, na.rm = TRUE))
+# model selection
+water_rand.lm <- lme(water_ratio ~ trt,
+                     random = ~ 1|id,
+                     data = water_ratio.df, 
+                     method = "REML")
+water_norand.lm <- gls(water_ratio ~ trt, 
+                       data = water_ratio.df, 
+                       method = "REML")
+anova(water_rand.lm, water_norand.lm)
+# model without random has lower aic so use that once
+water_final.lm <- lm(water_ratio ~ trt, data = water_ratio.df)
+# run anova
+Anova(water_final.lm, type = "3")
+# significant check assumptions
+residuals <- resid(water_final.lm)
+plot(fitted(water_final.lm), residuals)
+qqnorm(residuals)
+# assumptions good run post f tests
+water.emm <- emmeans(water_final.lm, pairwise ~ trt, adjust = "bonferroni")
+# plot
+plot(water.emm, comparisons = TRUE) + theme_classic()
+# contrasts with emmeans
+emminteraction = emmeans(water_final.lm, pairwise ~ trt, adjust = "bonferroni", alpha = 0.5)
+emminteraction$contrasts
+# groupings
+cld(water.emm)
+
+```
+
+
+
+
+
+
+
+
+

@@ -13,6 +13,8 @@ output:
     toc: yes
 description: |
   C-N Ratio Results from Pennycress Decomp Study
+editor_options:
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -114,7 +116,7 @@ kable(decomp_summary.df)
 
 # Summary Figure
 ```{r echo=FALSE}
-decomp.df %>%
+c_n.plot <- decomp.df %>%
   ggplot(aes(x = spp, y = c_n_ratio, color = plot)) +
 stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 4) +
@@ -215,5 +217,37 @@ Figure 5. Mean and standard error of carbon to nitrogen ratios by species with l
 ```{r include = FALSE}
 cld(emm.emm)
 ```
+
+# 2022-4-7 Want to see about % N content over time 
+```{r}
+n.plot <- decomp.df %>%
+  rename(t = y_m_d) %>%
+  ggplot(aes(x = t, y = percent_n, color = spp)) +
+    stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+  theme_classic()
+
+c.plot <- decomp.df %>%
+  rename(t = y_m_d) %>%
+  ggplot(aes(x = t, y = percent_c, color = spp)) +
+    stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
+  theme_classic()
+```
+
+```{r}
+n.plot + c.plot + c_n.plot + plot_layout(guides = "collect", ncol = 3)
+```
+
+
+
+
+
+
+
 
 
