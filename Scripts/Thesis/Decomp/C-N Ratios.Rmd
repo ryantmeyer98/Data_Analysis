@@ -123,6 +123,8 @@ stat_summary(
   stat_summary(
     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
   theme_classic()
+
+c_n.plot
 ```
 
 Figure 1. Mean and standard error of carbon to nitrogen ratio by species with color as plot. 
@@ -228,6 +230,7 @@ n.plot <- decomp.df %>%
   stat_summary(
     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
   theme_classic()
+n.plot
 
 c.plot <- decomp.df %>%
   rename(t = y_m_d) %>%
@@ -244,7 +247,7 @@ n.plot + c.plot + c_n.plot + plot_layout(guides = "collect", ncol = 3)
 ```
 
 
-
+# Total N and total C in sample
 
 
 

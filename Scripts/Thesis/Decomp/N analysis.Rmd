@@ -1,0 +1,229 @@
+---
+title: "N analysis"
+author: "Meyer, R."
+date: "2022-4-4"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: flatly
+  word_document:
+    toc: yes
+description: |
+  C-N Ratio Results from Pennycress Decomp Study
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, libraries, include = FALSE}
+library(tidyverse)
+library(here)
+library(readxl)
+library(patchwork)
+library(janitor)
+library(car)
+library(lme4)
+library(lmerTest)
+library(nlme)
+library(knitr)
+library(emmeans)
+library(multcomp)
+```
+
+```{r, read in data, include = FALSE}
+# other data
+no_data.df <- read.csv(here("Data/Decomp/n no data.csv")) %>%
+  clean_names() %>%
+  remove_empty(which = c("cols", "rows"))
+# percent c and n data
+n_data.df <- read.csv(here("Data/Decomp/n with data.csv")) %>%
+  clean_names() %>%
+  remove_empty(which = c("cols", "rows"))
+# biomass data
+biomass.df <- read.csv(here("Data/Decomp/biomass.csv")) %>%
+  clean_names() %>%
+  remove_empty(which = c("cols", "rows"))
+```
+
+
+```{r, modify and clean, include = FALSE}
+# rename everything to id
+no_data.df <- no_data.df %>%
+  rename(id = bag)
+
+n_data.df <- n_data.df %>%
+  rename(id = sample)
+
+biomass.df <- biomass.df %>%
+  rename(id = bag_no)
+
+# join the data
+full.df <- full_join(no_data.df, n_data.df, by = "id")
+
+# set id to factor
+full.df <- full.df %>%
+  mutate(id = as.factor(id))
+
+biomass.df <- biomass.df %>%
+  mutate(id = as.factor(id))
+
+# join data
+full.df <- full_join(full.df, biomass.df, by = "id")
+
+# select the columns i care about 
+full.df <- full.df %>%
+  dplyr::select(study, id, spp.x, y_m_d, plot, subplot, percent_n, percent_c, initial_wt_g, 
+         coll_wt_g, days)
+
+# rename columns
+full.df <- full.df %>%
+  rename(spp = spp.x,
+         t = y_m_d)
+
+# filter out decomp data
+full.df <- full.df %>%
+  filter(study == "decomp")
+
+# set plot to factor
+full.df <- full.df %>%
+  mutate(plot = as.factor(plot))
+
+# need to remove an na
+full.df <- full.df %>%
+  filter(id != 327)
+
+# calculate total c and total n in sample
+full.df <- full.df %>%
+  mutate(total_c_g = percent_c * coll_wt_g) %>%
+  mutate(total_n_g = percent_n * coll_wt_g)
+
+# calculate C:N ratio
+full.df <- full.df %>%
+  mutate(c_n_ratio = total_c_g / total_n_g)
+
+# create a summary table
+summary.df <- full.df %>%
+  group_by(spp, t) %>%
+  summarize(total_n_loss = sum(total_n_g, is.na = TRUE),
+            total_c_loss = sum(total_c_g, is.na = TRUE),
+            c_n_ratio = mean(total_c_g / total_n_g, is.na = TRUE),
+            n_sd = sd(total_n_g),
+            c_sd = sd(total_c_g))
+
+summary.df <- summary.df %>%
+  mutate(n_plus_sd = total_n_loss + n_sd) %>%
+  mutate(n_minus_sd = total_n_loss - n_sd) %>%
+  mutate(c_plus_sd = total_c_loss + c_sd) %>%
+  mutate(c_minus_sd = total_c_loss - c_sd)
+  
+
+library(skimr)
+skim(full.df)
+# get standard error
+
+
+# remove 9 because we did not send them 9 data
+full.df <- full.df %>%
+  filter(t != 9)
+
+# days to factor
+full.df <- full.df %>%
+  mutate(days = as.factor(days))
+
+full.df <- full.df %>%
+  filter(days != 259) %>%
+  filter(days != 359)
+```
+
+```{r, preliminary plots, echo = FALSE}
+# remaining biomass
+biomass.plot <- full.df %>%
+  ggplot(aes(x = days, y = coll_wt_g, color = spp)) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 2) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) + 
+  labs(x = "Days After Bag Placement", y = "Remaining Biomass (g)") +
+  theme_classic()
+
+# remaining n 
+n.plot <- full.df %>%
+  ggplot(aes(x = days, y = total_n_g, color = spp)) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 2) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) + 
+  labs(x = "Days After Bag Placement", y = "Remaining Nitrogen (g)") +
+  theme_classic()
+
+# remaining c
+c.plot <- full.df %>%
+  ggplot(aes(x = days, y = total_c_g, color = spp)) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 2) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) + 
+  labs(x = "Days After Bag Placement", y = "Remaining Carbon (g)") +
+  theme_classic()
+
+# c to n ratio
+ratio.plot <- full.df %>%
+  ggplot(aes(x = days, y = c_n_ratio, color = spp)) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 2) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) + 
+  labs(x = "Days After Bag Placement", y = "Carbon to Nitrogen Ratio") +
+  theme_classic()
+
+all.plot <- n.plot + c.plot + biomass.plot + ratio.plot + plot_layout(guides = "collect")
+
+ggsave(all.plot, filename = "Figures/All N Data.pdf", units = "in", width = 6, height = 6, dpi = 300)
+```
+
+```{r}
+
+full_summary.df <- summary.df %>%
+  group_by(spp)
+
+total_n.plot <- summary.df %>%
+  ggplot(aes(x = spp, y = total_n_loss, color = spp)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = n_minus_sd, ymax = n_plus_sd), stat = "identity", width = 0.2) +
+  theme_classic()
+total_n.plot
+
+total_c.plot <- summary.df %>%
+  ggplot(aes(x = spp, y = total_c_loss)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = c_minus_sd, ymax = c_plus_sd), stat = "identity", width = 0.2) +
+  theme_classic()
+
+total_n.plot + total_c.plot + plot_layout(guides = "collect")
+
+test.plot <- summary.df %>%
+  ggplot(aes(x = spp, y = total_n_loss, color = spp)) +
+    stat_summary(
+    fun = sum, na.rm = TRUE, geom = "point", size = 2) +
+  theme_classic()
+test.plot
+
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 2)
+```
+
+
+water_ratio.plot <- summary.df %>%
+  ggplot(aes(x = trt, y = water_ratio)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = water_error_minus_se, ymax = water_error_plus_se),
+                stat = "identity", width = 0.2) +
+
+
+
