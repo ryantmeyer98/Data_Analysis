@@ -1,5 +1,5 @@
 ---
-title: "C:N Ratios"
+title: "Final Overcompensation Stats"
 author: "Team Rabbit"
 date: "2022-4-7"
 output:
@@ -17,11 +17,11 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
+```{r, setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-```{r libraries, include= FALSE}
+```{r, libraries, warning=FALSE, include=FALSE}
 # load libraries
 library(tidyverse)
 library(here)
@@ -29,9 +29,11 @@ library(patchwork)
 library(janitor)
 library(knitr)
 library(lme4)
+library(nlme)
+library(car)
 ```
 
-```{r, data, include = FALSE}
+```{r read in data, warning=FALSE, include=FALSE}
 # read in the data
 full.df <- read.csv(here("Data/Other/popeco/overcomp.csv")) %>%
   clean_names() %>%
@@ -55,17 +57,14 @@ full.df <- full.df %>%
   mutate(water_content_g = above_wet_bio_g - above_dry_bio_g)
 
 full.df <- full.df %>%
-  mutate(water_ratio = above_wet_bio_g - above_dry_bio_g / above_wet_bio_g)
-
-full.df <- full.df %>%
-  mutate(test_ratio = above_wet_bio_g - above_dry_bio_g / above_dry_bio_g)
+  mutate(water_ratio = (above_wet_bio_g - above_dry_bio_g) / above_wet_bio_g)
 
 # remove column at end
 # test.df <- full.df %>%
 #   dplyr::select(week)
 ```
 
-```{r, summary files, include = FALSE}
+```{r summary, message=FALSE, warning=FALSE, include=FALSE}
 # summary file 
 summary.df <- full.df %>%
   group_by(trt) %>%
@@ -96,6 +95,10 @@ summary.df <- summary.df %>%
 summary.df <- summary.df %>%
   mutate(water_error_plus_se = water_ratio + water_se) %>%
   mutate(water_error_minus_se = water_ratio - water_se) 
+
+# remove crap values
+wr_ab_zero.df <- full.df %>%
+  filter(water_ratio > 0)
 ```
 
 ```{r, prelim plots, include = FALSE}
@@ -177,14 +180,15 @@ summary.df <- summary.df %>%
 # water_content.plot + water_ratio.plot + test_ratio.plot + plot_layout(guides = "collect")
 ```
 
-```{r, final plots, include = FALSE}
+# Final plots
+```{r, final plot code, include = FALSE}
+
 # totals plot
-total_dry_biomass.plot <- summary.df %>%
-  ggplot(aes(x = trt, y = total_dry_biomass)) +
-  geom_point() +
-  geom_errorbar(aes(ymin = dry_error_minus_se, ymax = dry_error_plus_se),
-                stat = "identity", width = 0.2) +
-  labs(x = "Treatment", y = "Total Dry Abovegound Biomass (g)") +
+total_dry_biomass.plot <- full.df %>%
+  ggplot(aes(x= trt, y = above_dry_bio_g)) +
+  stat_summary(
+    fun = sum, na.rm = TRUE, geom = "point", size = 4) +
+    labs(x = "Treatment", y = "Total Dry Abovegound Biomass (g)") +
   expand_limits(y = 0) +
   annotate("text", x = "0", y = 1, label = "B", size = 7) +
   annotate("text", x = "25", y = 1, label = "C", size = 7) +
@@ -193,62 +197,77 @@ total_dry_biomass.plot <- summary.df %>%
   annotate("text", x = "100", y = 1, label = "A", size = 7) +
   annotate("text", x = "0", y = 32, label = "2", size = 7) +
   theme_classic()
-total_dry_biomass.plot 
 
-water_ratio.plot <- summary.df %>%
+# water ratio plot
+# water_ratio.plot <- summary.df %>%
+#   ggplot(aes(x = trt, y = water_ratio)) +
+#   geom_point() +
+#   geom_errorbar(aes(ymin = water_error_minus_se, ymax = water_error_plus_se),
+#                 stat = "identity", width = 0.2) +
+#   labs(x = "Treatment", y = "Total Proportion of Weight in Water") +
+#   annotate("text", x = "0", y = 0.65, label = "A", size = 7) +
+#   annotate("text", x = "25", y = 0.65, label = "A", size = 7) +
+#   annotate("text", x = "50", y = 0.65, label = "A", size = 7) +
+#   annotate("text", x = "75", y = 0.65, label = "A", size = 7) +
+#   annotate("text", x = "100", y = 0.65, label = "B", size = 7) +
+#   annotate("text", x = "0", y = 0.9, label = "1", size = 7) +
+#   theme_classic()
+# water_ratio.plot
+
+water_ratio.plot <- wr_ab_zero.df %>%
   ggplot(aes(x = trt, y = water_ratio)) +
-  geom_point() +
-  geom_errorbar(aes(ymin = water_error_minus_se, ymax = water_error_plus_se),
-                stat = "identity", width = 0.2) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 4) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
   labs(x = "Treatment", y = "Proportion of Weight in Water") +
   annotate("text", x = "0", y = 0.65, label = "A", size = 7) +
-  annotate("text", x = "25", y = 0.65, label = "A", size = 7) +
-  annotate("text", x = "50", y = 0.65, label = "A", size = 7) +
-  annotate("text", x = "75", y = 0.65, label = "A", size = 7) +
-  annotate("text", x = "100", y = 0.65, label = "B", size = 7) +
+  annotate("text", x = "25", y = 0.65, label = "AB", size = 7) +
+  annotate("text", x = "50", y = 0.65, label = "AB", size = 7) +
+  annotate("text", x = "75", y = 0.65, label = "B", size = 7) +
+  annotate("text", x = "100", y = 0.65, label = "C", size = 7) +
   annotate("text", x = "0", y = 0.9, label = "1", size = 7) +
   theme_classic()
-water_ratio.plot
 
-
-final.plot <- water_ratio.plot + total_dry_biomass.plot
-
-ggsave(final.plot, file = "Outputs/Final.pdf", width = 6,
-       height = 6, units = "in", dpi = 300)
-
-ggsave(flow_weighted_no3.plot, file = "Figures/NO3 Concentration.pdf", units = "in", width = 3, height = 3)
-
-test.df <- summary.df %>%
-  dplyr::select(trt, total_wet_biomass, total_dry_biomass, water_ratio)
 ```
 
-# Total Aboveground dry biomass
 
-```{r, include = FALSE}
+
+```{r final plot, echo=FALSE, message=FALSE, warning=FALSE}
+final.plot <- water_ratio.plot + total_dry_biomass.plot
+final.plot
+```
+
+# Stats for Total Biomass
+```{r, create summary for total biomass, include = FALSE}
+
+# 100 treatments with 0s were put in as NAs so i went in and fixed that 
+
 # rename pot to id
 total_trt.df <- full.df %>%
   rename(id = pot_id)
 
 # calculate sums per plot and treatment
-total_trt1.df <- total_trt.df %>%
+total_trt.df <- total_trt.df %>%
   group_by(id, trt) %>%
   summarize(total_above_dry = sum(above_dry_bio_g, na.rm = TRUE))
 
 # lmer doesn't work because there are as many treatments as n per treatment
-model.lm <- lmer(total_above_dry ~ trt + (1|id),
-                 data = total_trt1.df,
-                 REML = TRUE)
+# model.lm <- lmer(total_above_dry ~ trt + (1|id),
+#                  data = total_trt.df,
+#                  REML = TRUE)
 # gonna use nlme and car for this then 
-library(nlme)
-library(car)
+```
 
+
+```{r model for total bio, echo=FALSE, message=FALSE, warning=FALSE}
 rand.lm <- lme(total_above_dry ~ trt,
                random = ~ 1|id,
-               data = total_trt1.df, 
+               data = total_trt.df, 
                method = "REML")
 
 norand.lm <- gls(total_above_dry ~ trt,
-                 data = total_trt1.df, 
+                 data = total_trt.df, 
                  method = "REML")
 
 # check AIC, no rand has lower AIC
@@ -256,14 +275,19 @@ anova(rand.lm, norand.lm)
 
 # run anova
 Anova(norand.lm, type = "3")
+```
 
+
+```{r totbio assumptions, echo=FALSE, message=FALSE, warning=FALSE}
 # write it a simpler way to test the assumptions
-one.lm <- lm(total_above_dry ~ trt, data = total_trt1.df)
+one.lm <- lm(total_above_dry ~ trt, data = total_trt.df)
 
 residuals <- resid(one.lm)
 plot(fitted(one.lm), residuals)
 qqnorm(residuals)
+```
 
+```{r totbio post f, echo=FALSE, message=FALSE, warning=FALSE}
 # post F tests
 library(emmeans)
 emm.emm <- emmeans(one.lm, pairwise ~ trt, adjust = "bonferroni")
@@ -275,38 +299,51 @@ emminteraction = emmeans(one.lm, pairwise ~ trt, adjust = "bonferroni", alpha = 
 emminteraction$contrasts
 
 library(multcomp)
-cld(emm.emm)
-pairs(emm.emm)
-pwpp(emm.emm)
-pwpm(emm.emm)
+cld(emm.emm, Letters = letters)
 ```
 
-# Water Ratio
-```{r}
-# create data frame 
-water_ratio.df <- full.df %>%
+# Stats for Water Ratio
+```{r water aic, echo=FALSE, message=FALSE, warning=FALSE}
+# data frame for water
+water.df <- full.df %>%
   rename(id = pot_id)
-# calculate sums per plot and treatment
-water_ratio.df <- water_ratio.df %>%
-  group_by(id, trt) %>%
-  summarize(water_ratio = sum(water_ratio, na.rm = TRUE))
+
+water.df <- water.df %>%
+  dplyr::select(trt, id, water_ratio)
+
+water.df <- water.df %>%
+  na.omit(water_ratio)
+
+water.df <- water.df %>%
+  filter(water_ratio > 0)
 # model selection
 water_rand.lm <- lme(water_ratio ~ trt,
                      random = ~ 1|id,
-                     data = water_ratio.df, 
+                     data = water.df, 
                      method = "REML")
+
 water_norand.lm <- gls(water_ratio ~ trt, 
-                       data = water_ratio.df, 
+                       data = water.df, 
                        method = "REML")
+# random effect
 anova(water_rand.lm, water_norand.lm)
+```
+
+```{r water anova, echo=FALSE, message=FALSE, warning=FALSE}
 # model without random has lower aic so use that once
-water_final.lm <- lm(water_ratio ~ trt, data = water_ratio.df)
+water_final.lm <- lm(water_ratio ~ trt, data = water.df)
 # run anova
 Anova(water_final.lm, type = "3")
+```
+
+```{r assumptions, echo=FALSE, message=FALSE, warning=FALSE}
 # significant check assumptions
 residuals <- resid(water_final.lm)
 plot(fitted(water_final.lm), residuals)
 qqnorm(residuals)
+```
+
+```{r post f water, echo=FALSE, message=FALSE, warning=FALSE}
 # assumptions good run post f tests
 water.emm <- emmeans(water_final.lm, pairwise ~ trt, adjust = "bonferroni")
 # plot
@@ -315,9 +352,9 @@ plot(water.emm, comparisons = TRUE) + theme_classic()
 emminteraction = emmeans(water_final.lm, pairwise ~ trt, adjust = "bonferroni", alpha = 0.5)
 emminteraction$contrasts
 # groupings
-cld(water.emm)
-
+cld(water.emm, Letters = letters)
 ```
+
 
 
 
