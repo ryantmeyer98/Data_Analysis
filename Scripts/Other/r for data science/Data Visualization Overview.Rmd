@@ -1,0 +1,299 @@
+---
+title: "Ch 3 and 4 Overview"
+author: "Ryan Meyer"
+date: "4/22/2022"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: flatly
+  word_document:
+    toc: yes
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Libraries 
+```{r}
+library(tidyverse)
+??vegan
+?ggplot2
+?tidyverse
+?filter()
+```
+
+# Chapter 3: plotting
+
+The syntax of plotting in ggplot2:
+ggplot(data = data, mapping = aes(x = x, y = y, any other aes here)) +
+geometries_here()
+
+This can be shortened, I often do this
+data %>%
+ggplot(aes(x,y)) +
+geom_here()
+
+
+# Starting with some useful geometries 
+R has built in data, I'm going to be using the motor trend car data because cars are cool
+```{r}
+# many different ways to write the code, lots of ways to do this!
+mpg
+diamonds
+
+ggplot(data = data, mapping = aes(x = x, y = y)) +
+  geom_point()
+
+ggplot(data = data, mapping = aes(x = x)) +
+  geom_point(mapping = aes(y = y1)) +
+  geom_point(aes(y = y2))  
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+
+# vs.
+mpg %>%
+  ggplot(aes(cty, hwy)) +
+  geom_point()
+
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point()
+
+# some basic and useful geometries
+mpg
+
+mpg %>%
+  ggplot(aes(cty, hwy)) +
+  geom_point()
+
+mpg %>%
+  ggplot(aes(cty, hwy)) +
+  geom_jitter()
+
+mpg %>%
+  ggplot(aes(cty, hwy)) +
+  geom_smooth(se = FALSE)
+
+mpg %>%
+  ggplot(aes(x = drv)) +
+  geom_bar()
+
+mpg %>%
+  ggplot(aes(class)) +
+  stat_count()
+
+# can have multiple geometries on the same plot 
+mpg %>%
+  ggplot(aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth(se = TRUE)
+  
+```
+
+# A useful note
+```{r}
+# sometimes when you want a continuous variable on your legend it can be useful to set it as a factor
+
+# is this the best example, nah, but it popped into my head pretty quick 
+mpg.df <- mpg
+
+mpg %>%
+  ggplot(aes(displ, cty, color = hwy)) +
+  geom_point()
+
+mpg %>%
+  mutate(hwy = as.factor(hwy)) %>%
+  ggplot(aes(displ, cty, color = hwy)) +
+  geom_point()
+```
+
+
+# Adding Aesthetics to these 
+```{r}
+# some examples of aesthetics, color, shape, size, alpha 
+# again, many different ways to do this, the method used in the textbook is useful for assigning an aesthetic to a particular geometry, putting it in the ggplot statement assigns it to everything, the following code makes the same graph 
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = class))
+
+mpg %>%
+  ggplot(aes(displ, hwy, color = class)) +
+  geom_point()
+
+# sometimes you will need to put your aesthetics in the geom statement though, particularly if you want to filter by specific things without changing your data frame
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(mapping = aes(color = class)) + 
+  geom_smooth()
+
+# if you put color in the ggplot statement it does this
+mpg %>%
+  ggplot(aes(displ, hwy, color = class)) +
+  geom_point() +
+  geom_smooth()
+
+# the takeaway, there are many ways to do this, one isn't better than the other, but they are useful for particular things
+mpg %>%
+  ggplot(aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_smooth()
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(mapping = aes(color = class)) + 
+  geom_smooth()
+
+```
+
+# Getting a bit more advanced, mutating things within ggplot
+```{r}
+# you can mutate things within ggplot, you may sometimes want to make a new data frame to make a graph, but you don't need to do this, you can make your mutations within ggplot
+mpg_one.df <- mpg.df %>%
+  filter(class == "compact")
+
+mpg %>%
+  filter(class == "compact") %>%
+  ggplot(aes(displ, hwy)) +
+  geom_point()
+
+mpg_one.df %>%
+  ggplot(aes(displ, hwy)) +
+  geom_point()
+
+# but, it also matters where you put these mutations, you can put them within geometries, this is a cool trick!
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(mapping = aes(color = class)) + 
+  geom_smooth(data = filter(mpg, class == "subcompact"), se = FALSE)
+
+mpg %>%
+  ggplot(aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_smooth(data = filter(mpg, class == "subcompact"), se = FALSE)
+
+mpg %>%
+  filter(class == "subcompact") %>%
+  ggplot(aes(displ, hwy, color = class)) +
+  geom_point() +
+  geom_smooth()
+
+mpg %>%
+  ggplot(aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_smooth(data = filter(mpg, class == "subcompact"), se = FALSE)
+```
+
+
+# Stat Summary, one of the best features of ggplot
+## Stat summary will do summary stats for you and plot them it great
+```{r}
+# mean and standard error plot
+mpg %>%
+  ggplot(aes(cyl, hwy)) +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "point", size = 3) +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3, size = 0.7)
+
+# min max and medium examples
+mpg %>%
+  ggplot(aes(class, displ)) +
+  stat_summary(
+    fun.min = min,
+    fun.max = max,
+    fun = median
+  ) +
+  theme_isco()
+
+mpg %>%
+  ggplot(aes(drv, cty)) +
+  geom_boxplot()
+
+mpg %>%
+  ggplot(aes(class, displ, group = 1)) +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "line", size = 0.5) +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.3, size = 0.7)
+```
+
+# Facet grid and facet wrap - useful for data exploration
+```{r}
+# facet wrap
+mpg %>%
+  ggplot(aes(cyl, hwy)) +
+  geom_point() +
+  facet_wrap(~class)
+
+# facet grid
+mpg %>%
+  ggplot(aes(cyl, hwy)) +
+  geom_point() +
+  facet_grid(drv ~ class)
+```
+
+# Last thing, making graphs pretty
+```{r}
+install.packages("ggThemeAssist")
+# use that
+# can also add a whole host of theme_themes() to make graphs look nice easy
+# labs is useful for adding axis labels 
+# theme classic is my favorite 
+mpg %>%
+  ggplot(aes(cyl, cty, color = drv)) +
+  stat_summary(fun = mean, na.rm = TRUE, geom = "point", size = 3) +
+  stat_summary(fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3, size = 0.7) +
+  labs(x = "Cylinders", "City MPG") +
+  theme_classic()
+
+# obligatory bar graph - so i made an interesting bar graph...ah jeez
+mpg %>%
+  ggplot(aes(class)) +
+  stat_count(aes(fill = drv)) + theme(axis.line = element_line(linetype = "solid"),
+    panel.background = element_rect(fill = NA),
+    legend.key = element_rect(fill = NA),
+    legend.background = element_rect(fill = NA)) +labs(x = "Class", y = "Count", subtitle = "Number of cars tested by class") #+
+  #theme_classic()
+
+
+mpg %>%
+  mutate(class = as.factor(class)) %>%
+  mutate(class = fct_reorder(class, desc(val))) %>%
+  ggplot(aes(class)) +
+  stat_count(aes(fill = drv)) +
+  coord_flip() +
+  theme_classic()
+a <- "aaaaaa"
+theme_isco <- function(base_size = 14, base_family = "Times")
+{
+  theme(
+    # PLOT AND LINES
+    axis.line = element_line(size = 0.5, linetype = "solid"), 
+    axis.ticks = element_line(colour = "black"), 
+    panel.grid.major = element_line(colour = NA, linetype = "blank"),
+    panel.grid.minor = element_line(colour = NA, linetype = "blank"), 
+    panel.background = element_rect(fill = FALSE),
+    # LEGEND
+    legend.text = element_text(size = 10,  face = "bold"), 
+    legend.title = element_text(size = 10, face = "bold"), 
+    legend.key = element_rect(fill = NA, size = 0.9), 
+    legend.background = element_rect(fill = NA, size = 0.9),
+    legend.position = "bottom",
+    # AXIS TEXT
+    axis.text = element_text(size = 11, face = "bold", colour = "black"), 
+    axis.text.x = element_text(size = 11, colour = "black", vjust = .5, hjust = .5, angle = 0), 
+    axis.text.y = element_text(size = 11, colour = "black"),
+    # AXIS TITLES
+    axis.title = element_text(size = 12, face = "bold"),
+    #FACETS
+    strip.text = element_text(size = 12, face = "bold", colour = "black"),
+    strip.background = element_rect(colour="white", fill="white"))
+}
+```
+
+
+
+
+

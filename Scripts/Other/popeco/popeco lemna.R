@@ -183,7 +183,122 @@ final4.plot <- wide.df %>%
 
 final1.plot + final2.plot + plot_layout(ncol = 2)
 final3.plot + final4.plot
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Presentation Plots ----
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+lambda.plot <- wide.df %>%
+  filter(t !=0) %>%
+  ggplot(mapping = aes(x = t, y = lambda)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 5,
+    position = position_dodge(width = 0.3)) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
+    position = position_dodge(width = 0.3)) +
+  annotate("text", x = "1", y = -1, label = "A", size = 6) +
+  annotate("text", x = "2", y = -1, label = "B", size = 6) +
+  annotate("text", x = "3", y = -1, label = "B", size = 6) +
+  annotate("text", x = "4", y = -1, label = "B", size = 6) +
+  labs(x = "Time", y = "Lambda") +
+  theme_classic()
+lambda.plot
+
+R0.plot <- wide.df %>%
+  filter(t !=0) %>%
+  ggplot(mapping = aes(x = t, y = r0)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 5,
+    position = position_dodge(width = 0.3)) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
+    position = position_dodge(width = 0.3)) +
+  annotate("text", x = "1", y = -1, label = "A", size = 6) +
+  annotate("text", x = "2", y = -1, label = "AB", size = 6) +
+  annotate("text", x = "3", y = -1, label = "B", size = 6) +
+  annotate("text", x = "4", y = -1, label = "B", size = 6) +
+  labs(x = "Time", y = "R0") +
+  theme_classic()
+R0.plot
+lambda.plot
+
+lambdatrt.plot <- wide.df %>%
+  filter(t !=0) %>%
+  ggplot(mapping = aes(x = trt, y = lambda)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 5,
+    position = position_dodge(width = 0.3)) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
+    position = position_dodge(width = 0.3)) +
+  annotate("text", x = "0.25", y = -1, label = "A", size = 6) +
+  annotate("text", x = "0.5", y = -1, label = "A", size = 6) +
+  annotate("text", x = "1", y = -1, label = "A", size = 6) +
+  annotate("text", x = "1.25", y = -1, label = "A", size = 6) +
+  annotate("text", x = "1.5", y = -1, label = "A", size = 6) +
+  labs(x = "Treatment", y = "Lambda") +
+  theme_classic()
+
+R0trt.plot <- wide.df %>%
+  filter(t !=0) %>%
+  ggplot(mapping = aes(x = trt, y = r0)) +
+  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "point", size = 5,
+    position = position_dodge(width = 0.3)) +
+  stat_summary(
+    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 0.5,
+    position = position_dodge(width = 0.3)) +
+  annotate("text", x = "0.25", y = -1, label = "A", size = 6) +
+  annotate("text", x = "0.5", y = -1, label = "A", size = 6) +
+  annotate("text", x = "1", y = -1, label = "A", size = 6) +
+  annotate("text", x = "1.25", y = -1, label = "A", size = 6) +
+  annotate("text", x = "1.5", y = -1, label = "A", size = 6) +
+  labs(x = "Treatment", y = "R0") +
+  theme_classic()
+
+R0trt.plot
+lambdatrt.plot
+
+R0trt.plot + lambdatrt.plot
+
+test.plot <- wide.df %>%
+  filter(t !=0) %>%
+  ggplot(mapping = aes(x = trt, y = r0)) +
+  geom_violin() +
+  geom_boxplot(width = 0.1) +
+  annotate("text", x = "0.25", y = -1, label = "A", size = 6) +
+  annotate("text", x = "0.5", y = -1, label = "A", size = 6) +
+  annotate("text", x = "1", y = -1, label = "A", size = 6) +
+  annotate("text", x = "1.25", y = -1, label = "A", size = 6) +
+  annotate("text", x = "1.5", y = -1, label = "A", size = 6) +
+  labs(x = "Treatment", y = "R0") +
+  theme_classic()
+test.plot
+
+test2.plot <- wide.df %>%
+  filter(t !=0) %>%
+  ggplot(mapping = aes(x = trt, y = lambda)) +
+  geom_violin(trim = FALSE)+
+  geom_boxplot(width = 0.1) +
+  annotate("text", x = "0.25", y = -3, label = "A", size = 6) +
+  annotate("text", x = "0.5", y = -3, label = "A", size = 6) +
+  annotate("text", x = "1", y = -3, label = "A", size = 6) +
+  annotate("text", x = "1.25", y = -3, label = "A", size = 6) +
+  annotate("text", x = "1.5", y = -3, label = "A", size = 6) +
+  labs(x = "Time", y = "Lambda") +
+  theme_classic() 
+test2.plot
          
+wide.df %>%
+  filter(t !=0) %>%
+  ggplot(mapping = aes(x = t, y = r0)) +
+  geom_violin
+  theme_classic()
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # STATS ----
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -250,4 +365,4 @@ two.emm <- emmeans(two.lm, pairwise ~ t, adjust = "bonferroni")
 plot(two.emm, comparisons = TRUE) + theme_classic()
 emminteraction = emmeans(two.lm, pairwise ~ t, adjust = "bonferroni", alpha = 0.5)
 emminteraction$contrasts
-cld(one.emm, Letters = letters)
+cld(two.emm, Letters = letters)

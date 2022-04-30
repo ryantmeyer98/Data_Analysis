@@ -1,0 +1,217 @@
+---
+title: "Ch 3-5"
+author: "Ryan Meyer"
+date: "4/22/2022"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: flatly
+  word_document:
+    toc: yes
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+library(tidyverse)
+```
+
+# Chapter 3
+
+## 3.3 Code
+```{r 3.3 code}
+# scatterplot
+mpg %>%
+  ggplot(aes(displ, hwy)) + 
+  geom_point()
+# scatterplot with color as class
+mpg %>%
+  ggplot(aes(displ, hwy, color = class)) + 
+  geom_point()
+# scatterplot with size as class
+mpg %>%
+  ggplot(aes(displ, hwy, size = class)) + 
+  geom_point()
+# scatterplot with shading as class (alpha)
+mpg %>%
+  ggplot(aes(displ, hwy, alpha = class)) + 
+  geom_point()
+# you can specify the color
+mpg %>%
+  ggplot(aes(displ, hwy)) + 
+  geom_point(color = "blue")
+```
+
+## 3.3 Exercises 
+```{r 3.3 exercises }
+mpg %>%
+  ggplot(aes(displ, trans, color = cty, shape = trans)) + 
+  geom_point()
+# this is cool
+mpg %>%
+  ggplot(aes(displ, hwy, color = hwy > 15)) + 
+  geom_point()
+# 3.3 exercises
+?mpg
+
+mpg %>%
+  ggplot(aes(displ, trans, color = cty, shape = trans)) + 
+  geom_point()
+# this is cool
+mpg %>%
+  ggplot(aes(displ, hwy, color = hwy > 15)) + 
+  geom_point()
+```
+
+## 3.5 Code
+```{r 3.5 code }
+# using facet wrap
+mpg %>%
+  ggplot(aes(displ, hwy)) + 
+  geom_point() +
+  facet_wrap(~class)
+# can facet by multiple things using facet grid
+mpg %>%
+  ggplot(aes(displ, hwy)) + 
+  geom_point() +
+  facet_grid(drv ~ cyl)
+```
+
+## 3.5 Exercises
+```{r 3.5 exercises}
+# facet on a continuous variable
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~hwy)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = drv, y = cyl))
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+
+## 3.6 Code 
+```{r 3.6 code }
+# scatterplot
+mpg %>%
+  ggplot(aes(displ, hwy)) +
+  geom_point()
+# smooth line
+mpg %>%
+  ggplot(aes(displ, hwy)) +
+  geom_smooth()
+# can add lines by your data
+mpg %>%
+  ggplot(aes(displ, hwy, linetype = drv)) +
+  geom_smooth()
+# putting aesthetics together
+mpg %>%
+  filter(class == "subcompact") %>%
+  ggplot(aes(displ, hwy)) +
+  geom_point(mapping = aes(color = class)) +
+  geom_smooth(se = FALSE)
+
+mpg %>%
+  ggplot(aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_smooth(data = filter(mpg, class == "subcompact"), se = FALSE)
+```
+
+## 3.7 Code
+```{r 3.7 code }
+# making a bar graph
+diamonds %>%
+  ggplot(aes(cut)) +
+  geom_bar()
+# can use stat count to do the same thing
+diamonds %>%
+  ggplot(aes(cut)) +
+  stat_count()
+# by frequency
+demo.df <- tribble(
+  ~cut,         ~freq,
+  "Fair",       1610,
+  "Good",       4906,
+  "Very Good",  12082,
+  "Premium",    13791,
+  "Ideal",      21551
+)
+demo.df %>%
+  ggplot(aes(cut, freq)) +
+  geom_bar(stat = "identity")
+# as a proportion
+diamonds %>%
+  ggplot(aes(cut)) +
+  geom_bar(aes(y = stat(prop), group = 1))
+# stat summary - a powerful tool
+diamonds %>%
+  ggplot(aes(cut, depth)) +
+  stat_summary(fun.min = min, fun.max = max, fun = median)
+```
+
+## 3.8 Code
+```{r 3.8 code}
+# filling stuff
+diamonds %>%
+  ggplot(aes(cut)) +
+  geom_bar(aes(color = cut)) 
+
+diamonds %>%
+  ggplot(aes(cut)) +
+  geom_bar(aes(fill = cut)) 
+
+diamonds %>%
+  ggplot(aes(cut)) +
+  geom_bar(aes(fill = clarity)) 
+
+# there is a lot more to filling stuff that I didn't go through 
+```
+
+## 3.9 code
+```{r 3.9 code}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot()
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot() +
+  coord_flip()
+
+# map data
+nz <- map_data("nz")
+nz %>%
+  ggplot(aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black") +
+  coord_quickmap()
+
+bar <- ggplot(data = diamonds) + 
+  geom_bar(
+    mapping = aes(x = cut, fill = cut), 
+    show.legend = FALSE,
+    width = 1
+  ) + 
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+bar + coord_flip()
+bar + coord_polar()
+```
+
+
+
+

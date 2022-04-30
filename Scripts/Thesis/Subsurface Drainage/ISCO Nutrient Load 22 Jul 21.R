@@ -70,9 +70,7 @@ data_path <- "Data/ISCO/ISCO Water/"
 files <- dir(data_path, pattern = "*.csv")
 
 # read in the water data 
-# create data frame called isco_water, compile them from a tibble of multiple files
-isco_water.df <- tibble(filename = files) %>% 
-# this next block of code seems to read in the multiple files and compile them
+isco.df <- tibble(filename = files) %>% 
   mutate(contents = map(filename, ~read.csv(file.path(data_path, .x), encoding = "UTF-8", skipNul = TRUE, header=FALSE)),
          plot = map_chr(contents, ~.x[[1,2]]),
          header_line = map(contents, ~.x[2, ]),
@@ -80,7 +78,6 @@ isco_water.df <- tibble(filename = files) %>%
                                 set_names(.y)))  %>% 
   select(-contents, -header_line, -filename) %>%
   unnest(data_contents) %>% 
-# this block of code renames the column headers and sets datetime
   rename(datetime = `Isco Quantity`, w_velocity_ms = Velocity, w_level_m = Level, bottle = `Sample Event`) %>% 
   mutate(datetime = mdy_hm(datetime)) %>% 
   mutate(bottle = as.numeric(bottle),
