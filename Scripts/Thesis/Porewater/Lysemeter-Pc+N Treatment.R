@@ -118,7 +118,8 @@ smooth.plot <- ggplot(data = no3.df, mapping = aes(x = date, y = porewater_no3_m
     plot.title = element_text(size = 14),
     panel.background = element_rect(fill = NA)) + theme(legend.key = element_rect(fill = NA),
     legend.background = element_rect(fill = NA), 
-    legend.position = "NULL")
+    legend.position = "NULL") +
+  scale_color_manual(values = c("tan4", "forestgreen")) 
 smooth.plot
 
 ggplot(data = no3.df, mapping = aes(x = treatment, y = porewater_no3_mgl, color = treatment)) +
@@ -227,7 +228,8 @@ season.plot <- no3.df %>%
     legend.text = element_text(size = 14),
     legend.title = element_text(size = 14),
     legend.key = element_rect(fill = NA),
-    legend.background = element_rect(fill = NA))
+    legend.background = element_rect(fill = NA)) +
+  scale_color_manual(values = c("tan4", "forestgreen"))
 season.plot
 no3.df %>% 
   ggplot(aes(treatment, porewater_no3_mgl, color=treatment)) + 
@@ -235,7 +237,8 @@ no3.df %>%
   theme(axis.line = element_line(linetype = "solid"),
         panel.background = element_rect(fill = NA)) +
   labs(y = "Soil Porewater No3(mg/L)", colour = "Treatment") +
-  labs(x = "Treatment")
+  labs(x = "Treatment") +
+  scale_color_manual(values = c("tan4", "forestgreen"))
 
 # patchwork ----
 library(patchwork)
