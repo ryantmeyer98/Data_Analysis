@@ -222,11 +222,27 @@ ggsave(filename = "Figures/Nitrate EMM.pdf", no3n_emm.plot,
 graph_data.df <- graph_data.df %>%
   mutate(year_season = fct_relevel(year_season, "2019_fall","2020_spring", "2020_fall", "2021_spring", "2021_fall"))
 
+isco_nutrient.df <- isco_nutrient.df %>%
+  mutate(treatment = case_when(
+    plot == "1" ~ "Pennycress",
+    plot == "2" ~ "Reference",
+    plot == "4" ~ "Pennycress",
+    plot == "6" ~ "Reference",
+    plot == "7" ~ "Reference",
+    plot == "8" ~ "Pennycress",
+  ))
+
+graph_data.df <- graph_data.df %>%
+  mutate(treatment = case_when(
+    treatment == "ref" ~ "Reference",
+    treatment == "pc" ~ "Pennycress",
+    treatment == "pc_n" ~ "Pennycress_N"
+  ))
 
 graph_data.df %>%
   filter(variable %in% c("no3n_ppm")) %>%
   ggplot(mapping = aes(x = year_season, y = value_mean, shape = variable, color = treatment)) +
-  geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
+  #geom_point(size = 2, position = position_dodge2(width = 0.3), shape = 5) +
   stat_summary(
     fun = mean, na.rm = TRUE, geom = "point", size = 5,
     position = position_dodge(width = 0.3)) +
@@ -245,7 +261,8 @@ graph_data.df %>%
     legend.key = element_rect(fill = NA),
     legend.background = element_rect(fill = NA)) +
   labs(x = "Year+Season", y = "Nitrate Nitrogen mg/L", shape = NULL) +
-  theme(axis.text.x = element_text(angle = 15, hjust = 1))
+  theme(axis.text.x = element_text(angle = 15, hjust = 1)) +
+  scale_color_manual(values = c("forestgreen", "yellow3", "tan4"))
 
 
 
