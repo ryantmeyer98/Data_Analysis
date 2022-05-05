@@ -239,6 +239,13 @@ graph_data.df <- graph_data.df %>%
     treatment == "pc_n" ~ "Pennycress_N"
   ))
 
+graph_data.df <- graph_data.df %>%
+  mutate(treatment = as.factor(treatment))
+
+graph_data.df <- graph_data.df %>%
+  mutate(treatment = fct_relevel(treatment, c("Reference", "Pennycress", "Pennycress_N")))
+
+
 graph_data.df %>%
   filter(variable %in% c("no3n_ppm")) %>%
   ggplot(mapping = aes(x = year_season, y = value_mean, shape = variable, color = treatment)) +
@@ -260,9 +267,9 @@ graph_data.df %>%
     panel.background = element_rect(fill = NA),
     legend.key = element_rect(fill = NA),
     legend.background = element_rect(fill = NA)) +
-  labs(x = "Year+Season", y = "Nitrate Nitrogen mg/L", shape = NULL) +
+  labs(x = "Year+Season", y = "Soil Nitrate-N mg/L", shape = NULL) +
   theme(axis.text.x = element_text(angle = 15, hjust = 1)) +
-  scale_color_manual(values = c("forestgreen", "yellow3", "tan4"))
+  scale_color_manual(values = c("tan4", "forestgreen", "yellow3"))
 
 
 
