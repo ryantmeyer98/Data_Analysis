@@ -105,14 +105,14 @@ no3.df %>%
 smooth.plot <- ggplot(data = no3.df, mapping = aes(x = date, y = porewater_no3_mgl, color = treatment)) +
   geom_smooth(se = FALSE) +
   #geom_point(size = 3, position = position_dodge2(width = 0.7), shape = 5) +
-  stat_summary(
-    fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 3, size = 0.7,
-    position = position_dodge2(width = 3)) +
-  stat_summary(
-    fun = mean, na.rm = TRUE, geom = "point", size = 5, 
-    position = position_dodge2(width = 3)) +
+  #stat_summary(
+    #fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 3, size = 0.7,
+    #position = position_dodge2(width = 3)) +
+  #stat_summary(
+    #fun = mean, na.rm = TRUE, geom = "point", size = 5, 
+    #position = position_dodge2(width = 3)) +
   scale_y_continuous(limits = c(0,40)) +
-  labs(y = "Porewater Nitrate Nitrogen (mgL)") + theme(axis.line = element_line(linetype = "solid"),
+  labs(y = "Porewater Nitrate-N emmean (+/- 1SE)") + theme(axis.line = element_line(linetype = "solid"),
     axis.title = element_text(size = 14),
     axis.text = element_text(size = 14),
     plot.title = element_text(size = 14),
