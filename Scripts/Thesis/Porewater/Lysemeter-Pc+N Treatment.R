@@ -112,7 +112,7 @@ smooth.plot <- ggplot(data = no3.df, mapping = aes(x = date, y = porewater_no3_m
     #fun = mean, na.rm = TRUE, geom = "point", size = 5, 
     #position = position_dodge2(width = 3)) +
   scale_y_continuous(limits = c(0,40)) +
-  labs(y = "Porewater Nitrate-N emmean (+/- 1SE)") + theme(axis.line = element_line(linetype = "solid"),
+  labs(x="", y=expression(bold("Porewater Nitrate-N (mg L"^-1~"emmean+/-1 SE)"))) + theme(axis.line = element_line(linetype = "solid"),
     axis.title = element_text(size = 14),
     axis.text = element_text(size = 14),
     plot.title = element_text(size = 14),
