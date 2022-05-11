@@ -84,8 +84,8 @@ no3.df <- no3.df %>%
   arrange(date, plot)
 
 # remove pc+n treatment
-no3.df <- no3.df %>%
-  filter(treatment != "Pennycress_N")
+# no3.df <- no3.df %>%
+#   filter(treatment != "Pennycress_N")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #  PLOTTING ----
@@ -103,23 +103,34 @@ no3.df %>%
 
 # ME MAKE PLOT ---
 smooth.plot <- ggplot(data = no3.df, mapping = aes(x = date, y = porewater_no3_mgl, color = treatment)) +
-  geom_smooth(se = FALSE) +
-  #geom_point(size = 3, position = position_dodge2(width = 0.7), shape = 5) +
-  #stat_summary(
-    #fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 3, size = 0.7,
-    #position = position_dodge2(width = 3)) +
-  #stat_summary(
-    #fun = mean, na.rm = TRUE, geom = "point", size = 5, 
-    #position = position_dodge2(width = 3)) +
+  #geom_smooth(se = FALSE) +
+  # geom_point(size = 3, position = position_dodge2(width = 0.7), shape = 5) +
+  stat_summary(
+  fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = 3, size = .7,
+  position = position_dodge2(width = 3)) +
+  stat_summary(
+  fun = mean, na.rm = TRUE, geom = "point", size = 5,
+  position = position_dodge2(width = 3)) +
+  stat_summary(
+    fun = mean, na.rm = TRUE, geom = "line", size = .3,
+    position = position_dodge2(width = 3)) +
   scale_y_continuous(limits = c(0,40)) +
-  labs(x="", y=expression(bold("Porewater Nitrate-N (mg L"^-1~"emmean+/-1 SE)"))) + theme(axis.line = element_line(linetype = "solid"),
+  #labs(x="", y=expression(bold("Porewater Nitrate-N (mg L"^-1~"emmean+/-1 SE)"))) + 
+  labs(x="", y=expression(bold("Nitrate-N mg L"^-1))) + 
+  theme(axis.line = element_line(linetype = "solid"),
     axis.title = element_text(size = 14),
     axis.text = element_text(size = 14),
     plot.title = element_text(size = 14),
     panel.background = element_rect(fill = NA)) + theme(legend.key = element_rect(fill = NA),
     legend.background = element_rect(fill = NA), 
     legend.position = "NULL") +
-  scale_color_manual(values = c("tan4", "forestgreen")) 
+  scale_color_manual(values = c("tan4", "forestgreen", "yellow3")) +
+  theme_classic() +
+  theme(text = element_text(size = 16)) +
+  theme(text = element_text(face = "bold")) + 
+  theme(axis.text = element_text(colour = "black"),
+        axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
 smooth.plot
 
 ggplot(data = no3.df, mapping = aes(x = treatment, y = porewater_no3_mgl, color = treatment)) +
@@ -194,6 +205,38 @@ no3_lsmeans.df %>%
   geom_errorbar(aes(ymin = lsmean-SE, ymax = lsmean+SE), 
                 stat="identity", width = 0.2) 
 
+emmean.plot <- no3_lsmeans.df %>%
+  ggplot(aes(treatment, lsmean, color=treatment, group=treatment)) +
+  geom_point(size = 6) +
+  geom_line() +
+  geom_errorbar(aes(ymin = lsmean-SE, ymax = lsmean+SE), 
+                stat="identity", width = 0.3, size = 1) +
+  expand_limits(y=0) + theme(axis.line = element_line(linetype = "solid"),
+                             panel.background = element_rect(fill = NA)) +labs(y = "Soil Porewater No3(mg/L)", colour = "treatment") +
+  labs(x = "") +
+  scale_y_continuous(limits = c(0,40)) +
+  annotate("text", x = "Reference", y = 16, label = "A", size = 7) +
+  annotate("text", x = "Pennycress", y = 6, label = "B", size = 7) + 
+  annotate("text", x = "Pennycress_N", y = 6, label = "B", size = 7) + 
+  labs(y = "Porewater Nitrate Nitrogen (mgL)") +
+  theme(axis.title = element_text(size = 15),
+        axis.text = element_text(size = 14),
+        axis.text.x = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 14),
+        legend.key = element_rect(fill = NA),
+        legend.background = element_rect(fill = NA)) +
+  scale_color_manual(values = c("tan4", "forestgreen", "yellow3")) +
+  theme_classic() +
+  theme(text = element_text(size = 16)) +
+  theme(text = element_text(face = "bold")) + 
+  theme(axis.text = element_text(colour = "black"),
+        axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+emmean.plot
+
 no3_lsmeans.df %>% 
   ggplot(aes(date, lsmean, color=treatment, group=treatment)) +
   geom_point() +
@@ -213,7 +256,7 @@ season.plot <- no3.df %>%
   stat_summary(
     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3, size=.7) +
   stat_summary(
-    fun=mean, na.rm = TRUE, geom = "point", size = 5) +
+    fun=mean, na.rm = TRUE, geom = "point", size = 6) +
   expand_limits(y=0) + theme(axis.line = element_line(linetype = "solid"),
     panel.background = element_rect(fill = NA)) +labs(y = "Soil Porewater No3(mg/L)", colour = "treatment") +
   labs(x = "") +
@@ -229,7 +272,14 @@ season.plot <- no3.df %>%
     legend.title = element_text(size = 14),
     legend.key = element_rect(fill = NA),
     legend.background = element_rect(fill = NA)) +
-  scale_color_manual(values = c("tan4", "forestgreen"))
+  scale_color_manual(values = c("tan4", "forestgreen")) +
+  theme_classic() +
+  theme(text = element_text(size = 16)) +
+  theme(text = element_text(face = "bold")) + 
+  theme(axis.text = element_text(colour = "black"),
+        axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
 season.plot
 no3.df %>% 
   ggplot(aes(treatment, porewater_no3_mgl, color=treatment)) + 
@@ -244,7 +294,7 @@ no3.df %>%
 library(patchwork)
 smooth.plot + season.plot
 
-full.plot <- smooth.plot + season.plot +
+full.plot <- smooth.plot + emmean.plot +
   plot_layout(ncol=2, guides = "collect", widths = c(4,1)) + theme(axis.title.y = element_blank(), 
                                                   axis.text.y = element_blank(),
                                                   axis.line.y = element_blank(),
