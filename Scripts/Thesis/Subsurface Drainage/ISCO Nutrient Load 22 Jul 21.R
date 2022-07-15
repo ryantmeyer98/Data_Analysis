@@ -90,7 +90,7 @@ isco.df <- tibble(filename = files) %>%
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # REMOVE NON-15 MINUTE DATA ----
-isco_water.df <- isco_water.df %>% 
+isco_water.df <- isco.df %>% 
   mutate(minute = minute(datetime)) %>% 
   fill(bottle, .direction = "down") %>% 
   filter(minute %in% c(0, 15, 30, 45))
@@ -388,8 +388,8 @@ flow_weighted_no3.plot <- ggplot(data = flow_weighted_storm_event.df, mapping = 
     fun = mean, na.rm = TRUE, geom = "point", size = 4) +
   stat_summary(
     fun.data = mean_se, na.rm = TRUE, geom = "errorbar", width = .3,size=.7) +
-  labs(x = "Treatment") +
-  labs(y = "Flow Weighted Nitrate Nitrogen Concentration (mgL)") + theme(axis.line = element_line(linetype = "solid"),
+  labs(x = "") +
+  labs(y = "Flow Weighted NO3-N Concentration (mgL)") + theme(axis.line = element_line(linetype = "solid"),
     axis.title = element_text(size = 14),
     axis.text = element_text(size = 14),
     axis.text.x = element_text(size = 14),
@@ -399,7 +399,20 @@ flow_weighted_no3.plot <- ggplot(data = flow_weighted_storm_event.df, mapping = 
     panel.background = element_rect(fill = NA),
     legend.key = element_rect(fill = NA),
     legend.background = element_rect(fill = NA)) +
-  expand_limits(y = 0)
+  scale_shape_manual(
+    name = "Treatment",
+    labels = c("Reference", "Pennycress"),
+    values = c(21, 22), drop=FALSE)+
+  scale_color_manual(
+    name = "Treatment",
+    labels = c("Reference", "Pennycress"),
+    values = c("coral4", "green3"), drop=FALSE)+
+  scale_fill_manual(
+    name = "Treatment",
+    labels = c("Reference", "Pennycress"),
+    values = c("coral4", "green3"), drop=FALSE) +
+  expand_limits(y = 0) +
+  theme(legend.position = "bottom")
 flow_weighted_no3.plot
 
 flow_weighted_nh3.plot <- ggplot(data = flow_weighted_storm_event.df, mapping = aes(x = treatment, y = flow_weighted_nh3_concentration_mgl)) +
