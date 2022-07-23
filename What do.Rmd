@@ -1,0 +1,48 @@
+---
+title: "What Done"
+author: "Ryan Meyer"
+date: '2022-07-19'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The things I got done on each date, to keep me on track with what needs to be done
+## Current Objectives
+
+- write papers
+  - for all papers have the introduction and methods completed, need to start on results and getting figures in there
+- put together posters for IPREFER meeting
+  - the figures are in a really good spot for the poster
+- work on putting together the tile data
+  - the data is cleaned and joined and have figures that I think are poster quality, do not have enough data for any analysis, need to talk to Bill about this
+
+# 2022-7-18
+
+- Back from vacation, checked that epuiptment at farm was working, downloaded data, and collected water sames from rain event the previous night
+
+# 2022-7-19
+
+- Moved data to computer and archived, took water samples to LEA and entered jobs on LEA drive, accepted offer letter for RA next year, updated farm map and IPREFER poster and sent to Nicholas for feedback, started working on rebuilding the Lysimeters 
+
+# 2022-7-20
+
+- Began to seriously work on updating figures and putting together the ISCO code for the IPREFER poster and getting the tilewater data together
+
+# 2022-7-21
+
+- continued putting together tilewater code, talked to Krista, coco wants more hours so going to show him how to rebuild the tops of the lysimeterss
+
+# 2022-7-22
+
+- went to chicago to see family
+
+# 2022-7-23
+
+- finished up tilewater code for figures and reformatting figures for IPREFER poster, updated formatting of IPREFER poster 
+
+
+
+
