@@ -1,0 +1,144 @@
+#
+# U.S. Geological Survey
+# National Water Information System
+# Retrieved: 2022-09-12 12:36:24 EDT
+#
+# ---------------------------------- WARNING ----------------------------------------
+# Some of the data that you have obtained from this U.S. Geological Survey database
+# may not have received Director's approval. Any such data values are qualified
+# as provisional and are subject to revision. Provisional data are released on the
+# condition that neither the USGS nor the United States Government may be held liable
+# for any damages resulting from its use.
+#
+# More data may be available offline.
+# For more information on these data,  contact  USGS Water Data Inquiries.
+# This file contains the annual peak streamflow data.
+#
+# This information includes the following fields:
+#
+#  agency_cd     Agency Code
+#  site_no       USGS station number
+#  peak_dt       Date of peak streamflow (format YYYY-MM-DD)
+#  peak_tm       Time of peak streamflow (24 hour format, 00:00 - 23:59)
+#  peak_va       Annual peak streamflow value in cfs
+#  peak_cd       Peak Discharge-Qualification codes (see explanation below)
+#  gage_ht       Gage height for the associated peak streamflow in feet
+#  gage_ht_cd    Gage height qualification codes
+#  year_last_pk  Peak streamflow reported is the highest since this year
+#  ag_dt         Date of maximum gage-height for water year (if not concurrent with peak)
+#  ag_tm         Time of maximum gage-height for water year (if not concurrent with peak
+#  ag_gage_ht    maximum Gage height for water year in feet (if not concurrent with peak
+#  ag_gage_ht_cd maximum Gage height code
+#
+# Sites in this file include:
+#  USGS 05550500 POPLAR CREEK AT ELGIN, IL
+#
+# Peak Streamflow-Qualification Codes(peak_cd):
+#   1 ... Discharge is a Maximum Daily Average
+#   2 ... Discharge is an Estimate
+#   3 ... Discharge affected by Dam Failure
+#   4 ... Discharge less than indicated value,
+#           which is Minimum Recordable Discharge at this site
+#   5 ... Discharge affected to unknown degree by
+#           Regulation or Diversion
+#   6 ... Discharge affected by Regulation or Diversion
+#   7 ... Discharge is an Historic Peak
+#   8 ... Discharge actually greater than indicated value
+#   9 ... Discharge due to Snowmelt, Hurricane,
+#           Ice-Jam or Debris Dam breakup
+#   A ... Year of occurrence is unknown or not exact
+#   Bd ... Day of occurrence is unknown or not exact
+#   Bm ... Month of occurrence is unknown or not exact
+#   C ... All or part of the record affected by Urbanization,
+#            Mining, Agricultural changes, Channelization, or other
+#   F ... Peak supplied by another agency
+#   O ... Opportunistic value not from systematic data collection
+#   R ... Revised
+#
+# Gage height qualification codes(gage_ht_cd,ag_gage_ht_cd):
+#   1 ... Gage height affected by backwater
+#   2 ... Gage height not the maximum for the year
+#   3 ... Gage height at different site and(or) datum
+#   4 ... Gage height below minimum recordable elevation
+#   5 ... Gage height is an estimate
+#   6 ... Gage datum changed during this year
+#   7 ... Debris, mud, or hyper-concentrated flow
+#   8 ... Gage height tidally affected
+#   Bd ... Day of occurrence is unknown or not exact
+#   Bm ... Month of occurrence is unknown or not exact
+#   F ... Peak supplied by another agency
+#   R ... Revised
+#
+#
+agency_cd	site_no	peak_dt	peak_tm	peak_va	peak_cd	gage_ht	gage_ht_cd	year_last_pk	ag_dt	ag_tm	ag_gage_ht	ag_gage_ht_cd
+5s	15s	10d	6s	8s	33s	8s	27s	4s	10d	6s	8s	27s
+USGS	05550500	1952-03-11		303		3.82						
+USGS	05550500	1953-06-10		282		3.65						
+USGS	05550500	1954-04-25		310		3.83						
+USGS	05550500	1954-10-10		291		3.72						
+USGS	05550500	1956-05-10		175		2.89						
+USGS	05550500	1957-07-13		286		3.72						
+USGS	05550500	1958-02-28		210		3.16						
+USGS	05550500	1959-02-23		258		3.51	2		1959-02-23	1200	3.96	1
+USGS	05550500	1960-03-30		340		3.88						
+USGS	05550500	1961-09-25		327		3.12						
+USGS	05550500	1962-03-19		512		3.51						
+USGS	05550500	1963-04-30		171		2.56						
+USGS	05550500	1964-07-18		263		3.35						
+USGS	05550500	1965-02-07		350	2							
+USGS	05550500	1966-02-10		476		4.14						
+USGS	05550500	1967-06-10		797		5.29						
+USGS	05550500	1968-08-17		298		3.27						
+USGS	05550500	1969-06-09		247		2.99						
+USGS	05550500	1970-06-02		560		4.38						
+USGS	05550500	1971-02-19		296		3.18	2		1971-02-17		3.76	1
+USGS	05550500	1972-09-18		294		3.06						
+USGS	05550500	1973-04-22		896		5.45						
+USGS	05550500	1974-05-22		552		4.13						
+USGS	05550500	1975-06-17		488		3.87						
+USGS	05550500	1976-03-05		490		3.88						
+USGS	05550500	1977-03-29		117		2.10						
+USGS	05550500	1978-07-03		571		4.21						
+USGS	05550500	1979-03-19		765		4.97						
+USGS	05550500	1980-09-17		370	2							
+USGS	05550500	1981-04-23		304		3.25						
+USGS	05550500	1982-03-13		537		4.61						
+USGS	05550500	1982-12-03		761		5.67						
+USGS	05550500	1984-02-13		394		3.86						
+USGS	05550500	1985-03-04		633		5.08						
+USGS	05550500	1985-11-20		719		5.48						
+USGS	05550500	1987-08-27		625		5.09						
+USGS	05550500	1988-04-06		441		4.28						
+USGS	05550500	1989-08-05		700		5.79						
+USGS	05550500	1990-08-21		669		5.27						
+USGS	05550500	1990-11-28		399		4.08						
+USGS	05550500	1991-11-30		212		3.07						
+USGS	05550500	1993-07-19		691	C	5.39						
+USGS	05550500	1994-02-20		779	C	5.74						
+USGS	05550500	1995-04-27		580	C	4.92						
+USGS	05550500	1996-05-29		437	C	4.15						
+USGS	05550500	1997-02-21		1180	C	6.78						
+USGS	05550500	1998-05-08		400	C	4.29						
+USGS	05550500	1999-04-23		882	C	6.13						
+USGS	05550500	2000-04-21		555	C	4.33						
+USGS	05550500	2001-02-09		600	C	4.59						
+USGS	05550500	2001-10-14		637	C	4.67						
+USGS	05550500	2003-05-11		552	C	4.30						
+USGS	05550500	2004-03-06		367	C	3.54						
+USGS	05550500	2005-01-14		407	C	3.68						
+USGS	05550500	2006-03-13		461	C	3.92						
+USGS	05550500	2007-08-24		1120	C	5.90						
+USGS	05550500	2008-09-13	22:30	1560	C	7.69						
+USGS	05550500	2008-12-28		1170	C	6.55						
+USGS	05550500	2010-05-13	19:15	864	C	5.89						
+USGS	05550500	2011-05-29	23:30	634	C	5.12						
+USGS	05550500	2011-12-15	02:45	262	C	3.61						
+USGS	05550500	2013-04-18	15:30	1430	C	7.42						
+USGS	05550500	2014-07-01	11:30	543	C	4.80						
+USGS	05550500	2015-06-16	09:15	784	C	4.94						
+USGS	05550500	2015-12-14	21:15	357	C	3.19	2		2016-02-03	0400	3.32	
+USGS	05550500	2017-05-01	12:00	699	C	4.84						
+USGS	05550500	2018-05-31	08:45	837	C	5.37						
+USGS	05550500	2019-05-01	13:30	699	C	4.67						
+USGS	05550500	2020-05-15	07:30	1220	C	6.61						
+USGS	05550500	2021-06-27	02:00	395	C	3.41						

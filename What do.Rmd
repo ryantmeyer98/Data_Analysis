@@ -43,6 +43,28 @@ knitr::opts_chunk$set(echo = TRUE)
 
 - finished up tilewater code for figures and reformatting figures for IPREFER poster, updated formatting of IPREFER poster 
 
+# 2022-7-24
+
+- sunday day off 
+
+# 2022-7-25
+
+- collected water and downloaded data from farm (data from plots 7 and 8), began reworking and putting together N analysis data for CCI and decomp studies
+
+# 2022-7-26
+
+- filtered water samples, put job data into LEA drive and took samples over to LEA, then went and pulled decomp analysis off the drive and began putting it together for analysis with addition of nitrogen data in the dataset, its 11:44 and I could really use some food lol gonna go eat lunch
+
+# 2022-7-27
+
+- Showed Coco how to rebuild the tops of the lysimeters, pulled Bill's decomp data analysis into my own files and began working the nitrogen data into that analysis 
+
+# 2-22-28
+
+- finished with the nonlinear models on the decomp data and began going through the post F tests, there are some issues with the nonlinear models for the nitrogen data that I am having some trouble figuring out, put some finishing touches on the IPREFER poster by reformatting it a little bit to aesthetically work a little better
+
+
+
 
 
 
