@@ -1,0 +1,11 @@
+﻿site,River mile,River km,Nitrate,NH3,DRP
+,,,mg/L,mg/L,mg/L
+upstream,-0.2,-0.27,20,0.25,15
+effluent,0,0,50,0,30
+effluent at stream below,0,0,20,0,20
+site 2,1.6,2.59,20,0.25,30
+site 3,2.2,3.57,20,0,30
+site 4,3.5,5.7,20,0.25,6
+,,,,,
+,,,,,
+,,,,,

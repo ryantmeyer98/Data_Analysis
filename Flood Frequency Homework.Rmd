@@ -1,0 +1,240 @@
+---
+title: "Flood Frequency Homework"
+author: "Ryan Meyer"
+date: '2022-09-17'
+output: 
+  bookdown::word_document2: default
+  bookdown::html_document2:
+    theme: flatly
+    toc: true
+    toc_float: true
+  distill::distill_article:
+    toc: true
+params:
+  palette: berlin
+editor_options: 
+  chunk_output_type: console
+---
+
+dont bother with the 100 year stuff
+
+```{r libraries, include = FALSE}
+# load libraries
+library(tidyverse)
+library(knitr)
+library(patchwork)
+```
+
+```{r setup, include=FALSE}
+# load dataset
+poplar.df <- read_csv("stream ecology/output/poplar.csv")
+```
+
+# For the real time data in the past year:
+
+## What is the lowest flow in that period and when?
+
+The lowest flow in 2022 at poplar creek was 2.4cfs on July 4.
+
+## What is the highest flow in that period and when?
+
+The highest flow in 2022 at poplar creek was 404cfs on April 23.
+
+## What times tend to have the highest flows?
+
+Early spring from March to May consistently has the highest flows.
+
+## What times tend to have the lowest flows?
+
+Early summer and late winter have the lowest flows.
+
+## When is flow most variable?
+
+Flow appears to be most variable during the summer.
+
+# For the entire dataset
+
+## What is the discharge at a 1 year recurrence interval?
+
+The average of cfs at all recurrence intervals less than 2 is 331cfs.
+
+```{r include = TRUE}
+# determines average cfs for all flood below a ri of 2
+poplar.df %>%
+  filter(ri < 2) %>%
+  summarize(mean_cfs = mean(cfs))
+
+```
+
+## What are the discharges at 10 and 50 recurrence intervals (not doing 100 yr)?
+
+```{r include = TRUE}
+# determines average cfs for all flood between ri of 9 and 10
+poplar.df %>%
+  filter(ri > 9) %>%
+  filter(ri < 10)
+```
+
+10: 896 cfs 
+
+```{r include = TRUE}
+poplar.df %>%
+  ggplot(mapping = aes(ri, cfs)) +
+  geom_point() +
+  geom_smooth(se = FALSE, color = "red") +
+  expand_limits(x = 100) +
+  scale_y_continuous(limits = c(0, 3000), breaks = seq(0, 3000, by = 250)) +
+  scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, by = 5)) +
+  labs(x = "Recurrence Interval", y = "Discharge ") +
+  theme_classic() 
+```
+
+50: ~1700 cfs
+
+## What is the biggest flood before 1985?
+
+```{r include = TRUE}
+# create a working data frame to sort by highest cfs to make life a little easier
+working.df <- poplar.df %>%
+  filter(ymd < "1985-03-04")
+```
+
+The biggest flood before 1985 was on 1973-04-22 and had a discharge of 896cfs
+
+## what is the biggest flood after 1985?
+
+```{r include = TRUE}
+# same thing as previous code
+working.df <- poplar.df %>%
+  filter(ymd > "1985-03-04")
+```
+
+The biggest flood after 1985 was on 2008-09-13 and had a discharge of 1560cfs
+
+## How many of the top ten flood are before 1985?
+
+Only one of the top ten floods occured before 1985.
+
+# For the divided data set
+
+```{r}
+# create a new data frame with updated calculates for pre 1985
+pre.df <- poplar.df %>%
+  filter(ymd < "1985-03-04") %>%
+  select(ymd, cfs, height_f) %>%
+  mutate(rank = rank(-cfs, na.last = "keep")) %>%
+  mutate(ri = 32 / rank) %>%
+  mutate(prob = 1 / ri) 
+
+# create a new data frame with updated calculates for post 1985
+post.df <- poplar.df %>%
+  filter(ymd > "1985-03-04") %>%
+  select(ymd, cfs, height_f) %>%
+  mutate(rank = rank(-cfs, na.last = "keep")) %>%
+  mutate(ri = 37 / rank) %>%
+  mutate(prob = 1 / ri) 
+```
+
+## What is the discharge at a 1 year recurrence interval for pre 1985?
+
+```{r include = TRUE}
+# pull from pre data frame the average of all cfs below 2
+pre.df %>%
+  filter(ri < 2) %>%
+  summarize(mean_cfs = mean(cfs))
+```
+
+The average discharge at all recurrence intervals less than 2 is 253 cfs
+
+## What is the discharge at a 1 year recurrence interval for post 1986
+
+```{r include = TRUE}
+# pull from post data frame the average cfs of all ri below 2
+post.df %>%
+  filter(ri < 2) %>%
+  summarize(mean_cfs = mean(cfs))
+```
+
+The average discharge at all recurrence intervals less than 2 is 457 cfs
+
+## What is the discharge at a 10 and 50 year recurrence interval pre 1986?
+
+```{r include = TRUE}
+# pulls from the pre data frame average cfs of all ri between 9 and 10
+pre.df %>%
+  filter(ri > 9) %>%
+  filter(ri < 10) %>%
+  summarize(mean_cfs = mean(cfs))
+
+# aren't any explicitely here so will extrapolate from figure
+pre.plot <- pre.df %>%
+  ggplot(mapping = aes(ri, cfs)) +
+  geom_point() +
+  geom_smooth(se = FALSE, color = "red") +
+  expand_limits(x = 100) +
+  scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, by = 250)) +
+  scale_x_continuous(limits = c(0, 50), breaks = seq(0, 50, by = 5)) +
+  labs(x = "Recurrence Interval", y = "Discharge (cfs)") +
+  geom_text(x = 10, y = 2000, label = "Pre 1985") +
+  theme_classic() 
+
+pre.plot
+```
+
+10: ~ 750 cfs
+
+50: ~1500 cfs
+
+## What is the discharge at a 10 and 50 year recurrence interval pre 1986?
+
+```{r include = TRUE}
+post.plot <- post.df %>%
+  ggplot(mapping = aes(ri, cfs)) +
+  geom_point() +
+  geom_smooth(se = FALSE, color = "red") +
+  expand_limits(x = 100) +
+  scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, by = 250)) +
+  scale_x_continuous(limits = c(0, 50), breaks = seq(0, 50, by = 5)) +
+  labs(x = "Recurrence Interval", y = "Discharge (cfs)") +
+  geom_text(x = 10, y = 2000, label = "Post 1985") +
+  theme_classic() 
+
+post.plot
+```
+
+10: 1180 cfs
+
+50: 1750 cfs
+
+# Comparing the shapes of the curves
+
+```{r include = TRUE}
+# put the plots next to each other for direct comparison 
+pre.plot + post.plot + plot_layout(ncol = 2)
+```
+
+## Are the big 10 year floods a lot larger?
+
+Yes, in the pre 1985 dataset the 10yr floods are well below 750 cfs while in the post 1985 dataset the same floods are well above 750 cfs.
+
+## Are the lower floods much different?
+
+Yes, in the pre 1985 dataset the small floods have much lower discharge than in the post 1985 dataset.
+
+## Are there more data points in low flow for pre or post?
+
+There are more data points in low flow for the pre 1985 data set. This would indicate that base flow at the lower range is more common pre 1985 than post 1985. 
+
+## How do the 10 - 20 year recurrence interval floods compare pre or post?
+
+The 10 - 20 year recurrence interval floods post 1985 are much larger than the same floods pre 1985. Post 1985 the 10 - 20 floods routinely reach discharges that not even the 35 - 40 year floods pre 1985 reach. 
+
+## What do you think the differences between pre and post 1985 might be?
+
+The primary difference between pre and post 1985 driving increases in flooding is likely urbanization. Increases in impermeable surfaces such as roads and parking lots increases overland flow resulting in flashier floods. The potential channelization of poplar creek or nearby streams would also drive similar trends. Additionally, anthropogenic climate change may be altering precipitation patterns such that fewer more intense rain events are more common driving increased flooding, although the currents effects of anthropogenic climate change likely have less of an impact than urbanization. 
+
+
+
+
+
+

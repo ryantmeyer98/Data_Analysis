@@ -1,0 +1,165 @@
+---
+title: "Flood Frequency Homework"
+author: "Ryan Meyer"
+date: '2022-09-17'
+output: 
+  bookdown::word_document2: default
+  bookdown::html_document2:
+    theme: flatly
+    toc: true
+    toc_float: true
+  distill::distill_article:
+    toc: true
+params:
+  palette: berlin
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	fig.retina = 3,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+```{r load libraries}
+library(tidyverse)
+library(janitor)
+library(patchwork)
+```
+
+```{r read, clean, calc loads}
+# read in the data
+load.df <- read_csv("stream ecology/data/nutrient load data.csv") %>%
+# clean up the names
+  clean_names() %>%
+# remove empty columns
+  remove_empty(which = c("cols", "rows")) %>%
+# filter out the na in site
+  filter(!is.na(site)) %>%
+# rename columns
+  rename(
+    no3_mgl = nitrate,
+    nh3_mgl = nh3,
+    drp_mgl = drp
+  ) %>%
+# make all the things that need to be numbers numbers
+  mutate(no3n_mgl = as.numeric(no3_mgl) / 4.4) %>%
+  mutate(nh3_mgl = as.numeric(nh3_mgl)) %>%
+  mutate(drp_mgl = as.numeric(drp_mgl)) %>%
+# reorder factors
+  mutate(site = as.factor(site)) %>%
+  mutate(site = fct_relevel(site, "upstream", "effluent", "effluent at stream below", "site 2", "site 3", "site 4")) %>%
+# calculate loads
+# add column for q
+  mutate(q_cfs = 3.6) %>%
+  mutate(q_l_sec = q_cfs * 0.02832 * 1000) %>%
+# nitrogen calcs
+  mutate(no3n_kg_day = no3n_mgl * q_l_sec * 60 * 60 * 24 * 0.000001) %>%
+# nh3
+  mutate(nh3_kg_day = nh3_mgl * q_l_sec * 60 * 60 * 24 * 0.000001) %>%
+# drp
+  mutate(drp_kg_day = drp_mgl * q_l_sec * 60 * 60 * 24 * 0.000001) %>%
+# reanme efluent below bc it too long
+  mutate(site = case_when(
+    site == "effluent at stream below" ~ "effluent below",
+    TRUE ~ as.character(site)
+  ))
+```
+
+# Graph each nutrient concentration versus distance downstream in km
+
+```{r}
+# nitrate nitrogen
+load.df %>%
+  ggplot(mapping = aes(river_km, no3n_mgl, shape = site)) +
+  geom_point(size = 5) +
+  labs(x = "km downstream from water treatment plant",
+       y = "Nitrate-Nitrogen concentration (mg/L)") +
+  theme_classic()
+
+```
+
+```{r}
+# nh3
+load.df %>%
+  ggplot(mapping = aes(river_km, nh3_mgl, shape = site)) +
+  geom_point(size = 5, position = position_dodge(width = 0.7)) +
+  labs(x = "km downstream from water treatment plant",
+       y = "NH3 concentration (mg/L)") +
+  theme_classic()
+```
+
+```{r}
+# drp
+load.df %>%
+  ggplot(mapping = aes(river_km, drp_mgl, shape = site)) +
+  geom_point(size = 5, position = position_dodge(width = 0.7)) +
+  labs(x = "km downstream from water treatment plant",
+       y = "drp concentration (mg/L)") +
+  theme_classic()
+```
+
+# How does the concentration change with distance for each:
+
+- a. Nitrate nitrogen decrease rapidly moving down-stream from the treatment plant and then stay the same. 
+
+- b. Ammonia concentrations are highly variable with distance, there are not any clear patterns in concentrations changes with distance.
+
+- c. DRP concentrations stay high moving down-stream and then drop very rapidly. 
+
+# How do the nurients change with distance compared to one another?
+
+While the nitrate nitrogen, and to some extent the dissolved reactive phosphorus, demonstrate clear decreases in concentration moving down-stream, the ammonia is highly variable with no discernable pattern. 
+
+# What was the discharge at the usgs site?
+
+- cfs: 3.6
+- m3/sec: 102
+
+# Just because it did the calc for fun, what is the load of each element per day at each site?
+
+```{r}
+# nitrate nitrogen
+load.df %>%
+  ggplot(mapping = aes(site, no3n_kg_day, shape = site)) +
+  geom_point(size = 5) +
+  labs(x = "site",
+       y = "Nitrate-Nitrogen load (kg/day)") +
+  expand_limits(y = 20) +
+  theme_classic() 
+```
+
+```{r}
+# nh3
+load.df %>%
+  ggplot(mapping = aes(site, nh3_kg_day, shape = site)) +
+  geom_point(size = 5, position = position_dodge(width = 0.7)) +
+  labs(x = "km downstream from water treatment plant",
+       y = "NH3 load (kg/day)") +
+  theme_classic()
+```
+
+```{r}
+# drp
+load.df %>%
+  ggplot(mapping = aes(site, drp_kg_day, shape = site)) +
+  geom_point(size = 5, position = position_dodge(width = 0.7)) +
+  labs(x = "km downstream from water treatment plant",
+       y = "drp load (kg/day)") +
+  theme_classic()
+```
+
+# 6 What is the difference between concentration and load? Why would it matter to the dead zone in the Gulf of Mexico?
+
+Concentration refers to the weight of a solute per volume, in this case mg of nutrients in water, while load refers to the concentration multiplied by the discharge giving the total amount of nutrients in weight per unit of time. This is important for the dead zone because concentration does not tell you about the total amount of nutrients leaving a place, while load will tell you the total amount of nutrients delivered to the Gulf of Mexico
+
+
+
+
+
+
+
